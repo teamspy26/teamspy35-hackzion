@@ -3,47 +3,35 @@ import { useState, useEffect } from 'react'
 import Navbar from '@/components/Navbar'
 import RiskBadge from '@/components/RiskBadge'
 import StatusBadge from '@/components/StatusBadge'
+import AuthGuard from '@/components/AuthGuard'
 import { mockShipments, mockDrivers } from '@/lib/mockData'
 import { Shipment, updateShipmentStatus, subscribeToShipments } from '@/lib/firestore'
+import { useAuth } from '@/context/AuthContext'
 import {
-  Truck,
-  MapPin,
-  Clock,
-  CheckCircle,
-  Play,
-  AlertTriangle,
-  Sparkles,
-  Navigation,
-  Package,
-  ChevronRight,
-  User,
-  Activity,
+  Truck, Clock, CheckCircle, Play, AlertTriangle,
+  Sparkles, Navigation, Package, ChevronRight, Activity, Loader2,
 } from 'lucide-react'
 import clsx from 'clsx'
 
 const DRIVER_ID = 'D1'
 const DRIVER = mockDrivers.find(d => d.id === DRIVER_ID)!
 
-type AiAlert = { shipmentId: string; message: string }
-
-export default function DriverPanel() {
+function DriverContent() {
+  const { user } = useAuth()
   const [shipments, setShipments] = useState<Shipment[]>(mockShipments)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
-  const [aiAlerts, setAiAlerts] = useState<AiAlert[]>([
+  const [liveData, setLiveData] = useState(false)
+
+  const aiAlerts = [
     { shipmentId: 'S1', message: 'Traffic ahead on NH-48 — consider NH-44 alternate route' },
     { shipmentId: 'S5', message: 'Rain forecast in 30 mins — reduce speed in Odisha corridor' },
-  ])
-  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null)
+  ]
 
   useEffect(() => {
-    try {
-      const unsub = subscribeToShipments(data => {
-        if (data.length > 0) setShipments(data)
-      })
-      return () => unsub()
-    } catch {
-      /* use mock */
-    }
+    const unsub = subscribeToShipments(data => {
+      if (data.length > 0) { setShipments(data); setLiveData(true) }
+    })
+    return () => unsub()
   }, [])
 
   const myShipments = shipments.filter(s => s.assigned_driver === DRIVER_ID)
@@ -56,9 +44,7 @@ export default function DriverPanel() {
     try {
       await updateShipmentStatus(shipment.id!, newStatus)
     } catch {
-      setShipments(prev =>
-        prev.map(s => (s.id === shipment.id ? { ...s, status: newStatus } : s))
-      )
+      setShipments(prev => prev.map(s => s.id === shipment.id ? { ...s, status: newStatus } : s))
     }
     setUpdatingId(null)
   }
@@ -70,38 +56,31 @@ export default function DriverPanel() {
         {/* Header */}
         <div className="flex items-start justify-between mb-7">
           <div>
-            <h1 className="text-4xl font-bold text-[#111111] leading-tight">
-              Driver
-              <br />
-              Execution Panel
-            </h1>
-            <p className="text-zinc-500 mt-1 text-sm">Manage your deliveries and follow AI suggestions</p>
+            <h1 className="text-4xl font-bold text-[#111111] leading-tight">Driver<br />Execution Panel</h1>
+            <div className="flex items-center gap-2 mt-1">
+              <p className="text-zinc-500 text-sm">Manage your deliveries and follow AI suggestions</p>
+              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${liveData ? 'bg-green-100 text-green-700' : 'bg-zinc-100 text-zinc-500'}`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${liveData ? 'bg-green-500 animate-pulse' : 'bg-zinc-400'}`} />
+                {liveData ? 'Firebase Live' : 'Demo data'}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-[#111111]">{myShipments.length}</div>
-              <div className="text-xs text-zinc-400">Assigned</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-brand-yellow">{completedShipments.length}</div>
-              <div className="text-xs text-zinc-400">Delivered</div>
-            </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-[#111111]">{pendingShipments.length}</div>
-              <div className="text-xs text-zinc-400">Pending</div>
-            </div>
+          <div className="flex items-center gap-6">
+            <div className="text-center"><div className="text-3xl font-bold text-[#111111]">{myShipments.length}</div><div className="text-xs text-zinc-400">Assigned</div></div>
+            <div className="text-center"><div className="text-3xl font-bold text-brand-yellow">{completedShipments.length}</div><div className="text-xs text-zinc-400">Delivered</div></div>
+            <div className="text-center"><div className="text-3xl font-bold text-[#111111]">{pendingShipments.length}</div><div className="text-xs text-zinc-400">Pending</div></div>
           </div>
         </div>
 
         <div className="grid grid-cols-12 gap-5">
-          {/* Driver Profile Card */}
+          {/* Driver Profile */}
           <div className="col-span-3 card bg-[#111111] text-white flex flex-col gap-4">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 bg-brand-yellow rounded-xl flex items-center justify-center text-black font-bold text-xl">
-                {DRIVER.name.charAt(0)}
+                {(user?.displayName ?? DRIVER.name).charAt(0)}
               </div>
               <div>
-                <div className="font-bold text-white">{DRIVER.name}</div>
+                <div className="font-bold text-white">{user?.displayName ?? DRIVER.name}</div>
                 <div className="text-xs text-zinc-400">Driver · {DRIVER.vehicle}</div>
               </div>
             </div>
@@ -119,34 +98,21 @@ export default function DriverPanel() {
               <div className="flex items-center justify-between mb-1">
                 <span className="text-xs text-zinc-400">Completion Rate</span>
                 <span className="text-xs font-bold text-white">
-                  {myShipments.length > 0
-                    ? Math.round((completedShipments.length / myShipments.length) * 100)
-                    : 0}
-                  %
+                  {myShipments.length > 0 ? Math.round((completedShipments.length / myShipments.length) * 100) : 0}%
                 </span>
               </div>
               <div className="w-full bg-white/10 rounded-full h-1.5">
-                <div
-                  className="bg-brand-yellow rounded-full h-1.5 transition-all"
-                  style={{
-                    width: `${
-                      myShipments.length > 0
-                        ? (completedShipments.length / myShipments.length) * 100
-                        : 0
-                    }%`,
-                  }}
-                />
+                <div className="bg-brand-yellow rounded-full h-1.5 transition-all"
+                  style={{ width: `${myShipments.length > 0 ? (completedShipments.length / myShipments.length) * 100 : 0}%` }} />
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-              <span className="text-xs text-zinc-300">
-                {activeShipment ? 'On Delivery' : 'Available'}
-              </span>
+              <div className={clsx('w-2 h-2 rounded-full', activeShipment ? 'bg-blue-400 animate-pulse' : 'bg-green-400')} />
+              <span className="text-xs text-zinc-300">{activeShipment ? 'On Delivery' : 'Available'}</span>
             </div>
           </div>
 
-          {/* Active delivery */}
+          {/* Active delivery + pending */}
           <div className="col-span-5 flex flex-col gap-4">
             {activeShipment ? (
               <div className="card border-2 border-brand-yellow/30">
@@ -159,7 +125,6 @@ export default function DriverPanel() {
                   </div>
                   <StatusBadge status={activeShipment.status} />
                 </div>
-
                 <div className="flex items-center gap-3 mb-4">
                   <div className="flex-1 bg-zinc-50 rounded-xl p-3">
                     <div className="text-xs text-zinc-400 mb-0.5">From</div>
@@ -171,7 +136,6 @@ export default function DriverPanel() {
                     <div className="font-bold text-[#111111]">{activeShipment.destination}</div>
                   </div>
                 </div>
-
                 <div className="grid grid-cols-3 gap-3 mb-4">
                   <div className="bg-zinc-50 rounded-xl p-3 text-center">
                     <Clock size={14} className="text-brand-yellow mx-auto mb-1" />
@@ -189,7 +153,6 @@ export default function DriverPanel() {
                     <div className="text-xs text-zinc-400 mt-1">Risk</div>
                   </div>
                 </div>
-
                 <div className="bg-zinc-50 rounded-xl p-3 mb-4">
                   <div className="flex items-center gap-1.5 mb-1">
                     <Navigation size={12} className="text-zinc-400" />
@@ -197,14 +160,12 @@ export default function DriverPanel() {
                   </div>
                   <div className="font-semibold text-sm text-[#111111]">{activeShipment.route}</div>
                 </div>
-
-                <button
-                  onClick={() => handleStatusUpdate(activeShipment, 'delivered')}
+                <button onClick={() => handleStatusUpdate(activeShipment, 'delivered')}
                   disabled={updatingId === activeShipment.id}
-                  className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-all disabled:opacity-60"
-                >
-                  <CheckCircle size={16} />
-                  {updatingId === activeShipment.id ? 'Updating…' : 'Mark as Delivered'}
+                  className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-all disabled:opacity-60">
+                  {updatingId === activeShipment.id
+                    ? <><Loader2 size={15} className="animate-spin" />Updating…</>
+                    : <><CheckCircle size={16} />Mark as Delivered</>}
                 </button>
               </div>
             ) : (
@@ -221,19 +182,12 @@ export default function DriverPanel() {
             <div className="card">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold text-[#111111]">Pending Shipments</h3>
-                <span className="text-xs font-semibold bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">
-                  {pendingShipments.length}
-                </span>
+                <span className="text-xs font-semibold bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">{pendingShipments.length}</span>
               </div>
               <div className="space-y-2.5">
-                {pendingShipments.length === 0 && (
-                  <p className="text-sm text-zinc-400 text-center py-4">No pending shipments</p>
-                )}
+                {pendingShipments.length === 0 && <p className="text-sm text-zinc-400 text-center py-4">No pending shipments</p>}
                 {pendingShipments.map(s => (
-                  <div
-                    key={s.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-all"
-                  >
+                  <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl bg-zinc-50 hover:bg-zinc-100 transition-all">
                     <div className="w-8 h-8 bg-zinc-200 rounded-lg flex items-center justify-center shrink-0">
                       <Package size={13} className="text-zinc-500" />
                     </div>
@@ -242,16 +196,12 @@ export default function DriverPanel() {
                         <span className="font-bold text-xs text-[#111111]">{s.id}</span>
                         <RiskBadge risk={s.delay_risk} size="sm" />
                       </div>
-                      <div className="text-xs text-zinc-500 truncate">
-                        {s.source} → {s.destination} · {s.eta} min
-                      </div>
+                      <div className="text-xs text-zinc-500 truncate">{s.source} → {s.destination} · {s.eta} min</div>
                     </div>
-                    <button
-                      onClick={() => handleStatusUpdate(s, 'in_transit')}
+                    <button onClick={() => handleStatusUpdate(s, 'in_transit')}
                       disabled={updatingId === s.id || !!activeShipment}
-                      className="flex items-center gap-1 bg-brand-yellow text-black text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-yellow-400 transition-all disabled:opacity-50 shrink-0"
-                    >
-                      <Play size={10} />
+                      className="flex items-center gap-1 bg-brand-yellow text-black text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-yellow-400 transition-all disabled:opacity-50 shrink-0">
+                      {updatingId === s.id ? <Loader2 size={10} className="animate-spin" /> : <Play size={10} />}
                       Start
                     </button>
                   </div>
@@ -262,7 +212,6 @@ export default function DriverPanel() {
 
           {/* AI Alerts + Completed */}
           <div className="col-span-4 flex flex-col gap-4">
-            {/* AI Alerts */}
             <div className="card">
               <div className="flex items-center gap-2 mb-4">
                 <div className="w-7 h-7 bg-brand-yellow rounded-lg flex items-center justify-center">
@@ -272,15 +221,10 @@ export default function DriverPanel() {
               </div>
               <div className="space-y-3">
                 {aiAlerts.map((alert, i) => (
-                  <div
-                    key={i}
-                    className="bg-brand-yellow/10 border border-brand-yellow/30 rounded-xl p-3"
-                  >
+                  <div key={i} className="bg-brand-yellow/10 border border-brand-yellow/30 rounded-xl p-3">
                     <div className="flex items-center gap-1.5 mb-1">
                       <Sparkles size={12} className="text-brand-yellow" />
-                      <span className="text-xs font-bold text-yellow-700">
-                        Shipment {alert.shipmentId}
-                      </span>
+                      <span className="text-xs font-bold text-yellow-700">Shipment {alert.shipmentId}</span>
                     </div>
                     <p className="text-sm text-zinc-700">{alert.message}</p>
                   </div>
@@ -290,38 +234,26 @@ export default function DriverPanel() {
                     <AlertTriangle size={12} className="text-red-500" />
                     <span className="text-xs font-bold text-red-600">Safety Alert</span>
                   </div>
-                  <p className="text-sm text-zinc-700">
-                    High delay risk detected on your route — check in with dispatch before proceeding
-                  </p>
+                  <p className="text-sm text-zinc-700">High delay risk detected — check in with dispatch before proceeding</p>
                 </div>
               </div>
             </div>
 
-            {/* Completed */}
             <div className="card flex-1">
               <div className="flex items-center justify-between mb-3">
                 <h3 className="font-bold text-[#111111]">Completed Today</h3>
-                <span className="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                  {completedShipments.length} done
-                </span>
+                <span className="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{completedShipments.length} done</span>
               </div>
               <div className="space-y-2">
-                {completedShipments.length === 0 && (
-                  <p className="text-sm text-zinc-400 text-center py-4">No deliveries yet</p>
-                )}
+                {completedShipments.length === 0 && <p className="text-sm text-zinc-400 text-center py-4">No deliveries yet</p>}
                 {completedShipments.map(s => (
-                  <div
-                    key={s.id}
-                    className="flex items-center gap-3 p-3 rounded-xl bg-green-50 border border-green-100"
-                  >
+                  <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl bg-green-50 border border-green-100">
                     <div className="w-7 h-7 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
                       <CheckCircle size={13} className="text-green-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="font-bold text-xs text-[#111111]">{s.id}</div>
-                      <div className="text-xs text-zinc-500 truncate">
-                        {s.source} → {s.destination}
-                      </div>
+                      <div className="text-xs text-zinc-500 truncate">{s.source} → {s.destination}</div>
                     </div>
                     <span className="text-xs text-green-600 font-semibold shrink-0">✓ Done</span>
                   </div>
@@ -332,5 +264,13 @@ export default function DriverPanel() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function DriverPage() {
+  return (
+    <AuthGuard requiredRole="driver">
+      <DriverContent />
+    </AuthGuard>
   )
 }
