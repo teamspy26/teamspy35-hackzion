@@ -8,6 +8,8 @@ import AIInsightsPanel from '@/components/AIInsightsPanel'
 import RiskBadge from '@/components/RiskBadge'
 import StatusBadge from '@/components/StatusBadge'
 import AuthGuard from '@/components/AuthGuard'
+import AdminMap from '@/components/maps/AdminMap'
+import CrimeRiskAnalyzer from '@/components/CrimeRiskAnalyzer'
 import { mockShipments, shipmentsByMonth, delayDistribution } from '@/lib/mockData'
 import { Shipment, subscribeToShipments } from '@/lib/firestore'
 import {
@@ -284,6 +286,33 @@ function AdminDashboardContent() {
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Intelligence Map — full fleet overview */}
+            <div className="col-span-12 card !p-0 overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-100">
+                <div>
+                  <h3 className="font-bold text-[#111111]">Intelligence Map</h3>
+                  <p className="text-xs text-zinc-400 mt-0.5">Live fleet positions · Risk zones · Crisis simulation</p>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-semibold text-green-600">
+                  <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                  Live
+                </div>
+              </div>
+              <AdminMap shipments={shipments} />
+            </div>
+
+            {/* Crime-Based Route Safety Analyzer */}
+            <div className="col-span-12 card">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-7 h-7 bg-red-50 rounded-lg flex items-center justify-center">
+                  <Route size={14} className="text-red-500" />
+                </div>
+                <h3 className="font-bold text-[#111111]">Crime-Based Route Safety Analyzer</h3>
+                <span className="text-xs bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-full ml-auto">NCRB Dataset</span>
+              </div>
+              <CrimeRiskAnalyzer />
             </div>
 
             {/* Shipment table */}

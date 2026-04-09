@@ -10,7 +10,9 @@ import { useAuth } from '@/context/AuthContext'
 import {
   Truck, Clock, CheckCircle, Play, AlertTriangle,
   Sparkles, Navigation, Package, ChevronRight, Activity,
-  Loader2, Route, Shield, LogOut } from 'lucide-react'
+  Loader2, Route, Shield, LogOut, Volume2, VolumeX, Globe } from 'lucide-react'
+import DriverMap from '@/components/maps/DriverMap'
+import { TRANSLATIONS, LangCode, speakText } from '@/lib/translations'
 import clsx from 'clsx'
 
 const DRIVER_ID = 'D1'
@@ -25,6 +27,9 @@ function DriverContent() {
   const [activeSection, setActiveSection] = useState('overview')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [progress, setProgress] = useState(5)
+  const [lang, setLang] = useState<LangCode>('en')
+  const [voiceOn, setVoiceOn] = useState(true)
+  const t = TRANSLATIONS[lang]
   // Simulate 10 min already elapsed for realistic demo start
   const deliveryStartRef = useRef(Date.now() - 1000 * 60 * 10)
 
@@ -107,12 +112,52 @@ function DriverContent() {
       <div className={`flex-1 min-w-0 transition-all duration-300`}>
         <div className="max-w-[1400px] mx-auto px-6 py-7">
 
+          {/* Language + Voice bar */}
+          <div className="flex items-center justify-between mb-4 px-1">
+            <div className="flex items-center gap-2">
+              <Globe size={14} className="text-zinc-400" />
+              <span className="text-xs font-semibold text-zinc-500 uppercase tracking-wide">Language</span>
+              <div className="flex gap-1.5 ml-1">
+                {(Object.keys(TRANSLATIONS) as LangCode[]).map(code => (
+                  <button
+                    key={code}
+                    onClick={() => {
+                      setLang(code)
+                      if (voiceOn) speakText(TRANSLATIONS[code].voice.activeDelivery, TRANSLATIONS[code].langCode)
+                    }}
+                    className={`px-3 py-1 rounded-lg text-xs font-bold transition-all border ${
+                      lang === code
+                        ? 'bg-[#111111] text-white border-[#111111]'
+                        : 'bg-zinc-50 text-zinc-500 border-zinc-200 hover:border-zinc-400'
+                    }`}
+                  >
+                    {TRANSLATIONS[code].langName}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <button
+              onClick={() => {
+                setVoiceOn(v => !v)
+                if (!voiceOn && activeSection) speakText(t.voice.activeDelivery, t.langCode)
+              }}
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-semibold transition-all ${
+                voiceOn
+                  ? 'bg-brand-yellow/10 border-brand-yellow text-yellow-700'
+                  : 'bg-zinc-50 border-zinc-200 text-zinc-400'
+              }`}
+            >
+              {voiceOn ? <Volume2 size={13} /> : <VolumeX size={13} />}
+              {voiceOn ? 'Voice ON' : 'Voice OFF'}
+            </button>
+          </div>
+
           {/* Header */}
           <div className="flex items-start justify-between mb-7">
             <div>
-              <h1 className="text-4xl font-bold text-[#111111] leading-tight">Driver<br />Execution Panel</h1>
+              <h1 className="text-4xl font-bold text-[#111111] leading-tight">{t.title.split(' ').slice(0,1).join(' ')}<br />{t.title.split(' ').slice(1).join(' ')}</h1>
               <div className="flex items-center gap-2 mt-1">
-                <p className="text-zinc-500 text-sm">Manage deliveries with real-time AI guidance</p>
+                <p className="text-zinc-500 text-sm">{t.subtitle}</p>
                 <span className={`text-xs font-semibold px-2 py-0.5 rounded-full flex items-center gap-1 ${liveData ? 'bg-green-100 text-green-700' : 'bg-zinc-100 text-zinc-500'}`}>
                   <span className={`w-1.5 h-1.5 rounded-full ${liveData ? 'bg-green-500 animate-pulse' : 'bg-zinc-400'}`} />
                   {liveData ? 'Firebase Live' : 'Demo data'}
@@ -136,6 +181,28 @@ function DriverContent() {
           </div>
 
           <div className="grid grid-cols-12 gap-5">
+
+            {/* Navigation Map */}
+            <div className="col-span-12 card !p-0 overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-100">
+                <div>
+                  <h3 className="font-bold text-[#111111]">{t.navigation}</h3>
+                  <p className="text-xs text-zinc-400 mt-0.5">Turn-by-turn route · Rest stops · Live alerts</p>
+                </div>
+                {activeShipment ? (
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="font-medium text-zinc-600">{activeShipment.source} → {activeShipment.destination}</span>
+                    <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                    <span className="text-blue-600 font-semibold">Active</span>
+                  </div>
+                ) : (
+                  <span className="text-xs text-zinc-400">{t.noActiveDelivery}</span>
+                )}
+              </div>
+              <div className="p-4">
+                <DriverMap shipment={activeShipment ?? null} />
+              </div>
+            </div>
 
             {/* Driver Profile */}
             <div className="col-span-3 card bg-[#111111] text-white flex flex-col gap-4">
@@ -186,7 +253,7 @@ function DriverContent() {
                       <div className="w-7 h-7 bg-brand-yellow rounded-lg flex items-center justify-center">
                         <Navigation size={14} className="text-black" />
                       </div>
-                      <span className="font-bold text-[#111111]">Active Delivery</span>
+                      <span className="font-bold text-[#111111]">{t.activeDelivery}</span>
                     </div>
                     <StatusBadge status={activeShipment.status} />
                   </div>
@@ -194,12 +261,12 @@ function DriverContent() {
                   {/* Source → Dest */}
                   <div className="flex items-center gap-3 mb-4">
                     <div className="flex-1 bg-zinc-50 rounded-xl p-3">
-                      <div className="text-xs text-zinc-400 mb-0.5">From</div>
+                      <div className="text-xs text-zinc-400 mb-0.5">{t.from}</div>
                       <div className="font-bold text-[#111111]">{activeShipment.source}</div>
                     </div>
                     <ChevronRight size={18} className="text-zinc-400 shrink-0" />
                     <div className="flex-1 bg-brand-yellow/10 rounded-xl p-3">
-                      <div className="text-xs text-zinc-400 mb-0.5">To</div>
+                      <div className="text-xs text-zinc-400 mb-0.5">{t.to}</div>
                       <div className="font-bold text-[#111111]">{activeShipment.destination}</div>
                     </div>
                   </div>
@@ -209,7 +276,7 @@ function DriverContent() {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-1.5">
                         <Navigation size={13} className="text-brand-yellow" />
-                        <span className="text-xs font-semibold text-zinc-600">Delivery Progress</span>
+                        <span className="text-xs font-semibold text-zinc-600">{t.deliveryProgress}</span>
                       </div>
                       <span className="text-xs font-bold text-[#111111]">{progress}%</span>
                     </div>
@@ -260,7 +327,7 @@ function DriverContent() {
                     className="w-full flex items-center justify-center gap-2 bg-green-600 text-white font-bold py-3 rounded-xl hover:bg-green-700 transition-all disabled:opacity-60">
                     {updatingId === activeShipment.id
                       ? <><Loader2 size={15} className="animate-spin" />Updating…</>
-                      : <><CheckCircle size={16} />Mark as Delivered</>}
+                      : <><CheckCircle size={16} />{t.markDelivered}</>}
                   </button>
                 </div>
               ) : (
@@ -268,15 +335,15 @@ function DriverContent() {
                   <div className="w-14 h-14 bg-zinc-100 rounded-2xl flex items-center justify-center">
                     <Truck size={24} className="text-zinc-300" />
                   </div>
-                  <p className="text-zinc-400 text-sm">No active delivery</p>
-                  <p className="text-xs text-zinc-300">Start a pending shipment below</p>
+                  <p className="text-zinc-400 text-sm">{t.noActiveDelivery}</p>
+                  <p className="text-xs text-zinc-300">{t.startPrompt}</p>
                 </div>
               )}
 
               {/* Pending shipments */}
               <div className="card">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-bold text-[#111111]">Pending Shipments</h3>
+                  <h3 className="font-bold text-[#111111]">{t.pendingShipments}</h3>
                   <span className="text-xs font-semibold bg-zinc-100 text-zinc-600 px-2 py-0.5 rounded-full">{pendingShipments.length}</span>
                 </div>
                 <div className="space-y-2.5">
@@ -297,7 +364,7 @@ function DriverContent() {
                         disabled={updatingId === s.id || !!activeShipment}
                         className="flex items-center gap-1 bg-brand-yellow text-black text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-yellow-400 transition-all disabled:opacity-50 shrink-0">
                         {updatingId === s.id ? <Loader2 size={10} className="animate-spin" /> : <Play size={10} />}
-                        Start
+                        {t.start}
                       </button>
                     </div>
                   ))}
@@ -314,7 +381,7 @@ function DriverContent() {
                   <div className="w-7 h-7 bg-brand-yellow rounded-lg flex items-center justify-center">
                     <Sparkles size={14} className="text-black" />
                   </div>
-                  <h3 className="font-bold text-[#111111]">AI Suggestions</h3>
+                  <h3 className="font-bold text-[#111111]">{t.aiSuggestions}</h3>
                 </div>
                 <div className="space-y-3">
                   {aiSuggestions.map((alert, i) => (
@@ -347,7 +414,7 @@ function DriverContent() {
                   <div className="w-7 h-7 bg-red-100 rounded-lg flex items-center justify-center">
                     <Shield size={14} className="text-red-600" />
                   </div>
-                  <h3 className="font-bold text-[#111111]">Risk Alerts</h3>
+                  <h3 className="font-bold text-[#111111]">{t.riskAlerts}</h3>
                 </div>
                 <div className="space-y-2.5">
                   {riskAlerts.map((alert, i) => (
@@ -365,7 +432,7 @@ function DriverContent() {
               {/* Completed */}
               <div className="card flex-1">
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-bold text-[#111111]">Completed Today</h3>
+                  <h3 className="font-bold text-[#111111]">{t.completedToday}</h3>
                   <span className="text-xs font-semibold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">{completedShipments.length} done</span>
                 </div>
                 <div className="space-y-2">

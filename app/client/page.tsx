@@ -9,6 +9,7 @@ import {
   Send, Loader2, MapPin, Route, Clock, Shield, ChevronDown,
   Navigation, Droplets, Wind, Train, Truck, Plane, Zap, Package, Info
 , LogOut } from 'lucide-react'
+import ClientMap from '@/components/maps/ClientMap'
 
 interface PetPlan {
   comfort_score: number
@@ -436,6 +437,38 @@ function ClientContent() {
                 )}
               </div>
             </div>
+
+            {/* ── SHIPMENT TRACKING MAP ── */}
+            {plan && source && destination && (
+              <div className="col-span-12 card !p-0 overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-100">
+                  <div>
+                    <h2 className="font-bold text-[#111111]">Live Shipment Tracking</h2>
+                    <p className="text-xs text-zinc-400 mt-0.5">Route · Estimated arrival · Current position</p>
+                  </div>
+                  <div className="flex items-center gap-2 text-xs">
+                    <span className="font-medium text-zinc-600">{source} → {destination}</span>
+                    <span className="bg-blue-100 text-blue-700 font-semibold px-2 py-0.5 rounded-full">In Transit</span>
+                  </div>
+                </div>
+                <div className="p-4">
+                  <ClientMap shipment={{
+                    id: 'PET-TRACK',
+                    source, destination,
+                    distance: Number(distance),
+                    weight: Number(weight),
+                    priority: 'high',
+                    eta: plan.eta_minutes,
+                    delay_risk: plan.risk.toLowerCase() as 'low' | 'medium' | 'high',
+                    vehicle: plan.safe_mode,
+                    route: `Pet Transport — ${plan.safe_mode}`,
+                    status: 'in_transit',
+                    assigned_driver: 'D1',
+                    ai_analysis: plan.analysis,
+                  }} />
+                </div>
+              </div>
+            )}
 
             {/* ── HOW IT WORKS ── */}
             <div className="col-span-12 card">

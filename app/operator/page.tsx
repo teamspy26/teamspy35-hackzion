@@ -14,6 +14,8 @@ import {
   IndianRupee, User, Zap, RefreshCw, CalendarClock,
   Database, Wifi, Brain, Server, BarChart2,
   PawPrint, AlertTriangle, Shield, Train, LogOut } from 'lucide-react'
+import OperatorMap from '@/components/maps/OperatorMap'
+import VisualIntelligence from '@/components/VisualIntelligence'
 import { getTraffic, getWeather, TRAFFIC_META, WEATHER_META, getScheduledDelivery } from '@/lib/realtime'
 
 interface PetPlan {
@@ -79,6 +81,7 @@ function OperatorContent() {
   const [petType, setPetType] = useState<'dog' | 'cat'>('dog')
   const [petAge, setPetAge] = useState('')
   const [petPlan, setPetPlan] = useState<PetPlan | null>(null)
+  const [mapShipment, setMapShipment] = useState<Shipment | null>(null)
 
   // Auto-populate traffic & weather on mount from simulated real-time feed
   useEffect(() => {
@@ -117,6 +120,16 @@ function OperatorContent() {
       const json = await res.json()
       setAiPlan(json.data)
       setScheduledTime(getScheduledDelivery(json.data.eta))
+      setMapShipment({
+        id: 'PREVIEW',
+        source: form.source, destination: form.destination,
+        distance: Number(form.distance), weight: Number(form.weight),
+        priority: form.priority, eta: json.data.eta,
+        delay_risk: json.data.delay_risk, vehicle: json.data.vehicle,
+        route: json.data.route, status: 'in_transit',
+        assigned_driver: json.data.assigned_driver,
+        ai_analysis: json.data.analysis,
+      })
       // If pet mode is on, also call pet safety module
       if (petMode) {
         try {
@@ -140,19 +153,28 @@ function OperatorContent() {
       const d = Number(form.distance), w = Number(form.weight)
       const vehicle = w > 70 ? 'Truck' : w > 20 ? 'Van' : 'Bike'
       const eta = Math.round((d / 60) * 60)
+      const risk: 'low' | 'medium' | 'high' = d > 400 ? 'high' : d > 200 ? 'medium' : 'low'
       setAiPlan({
         eta, vehicle,
         route: `Route A — NH-${Math.floor(Math.random() * 60) + 1}`,
         alternate_route: `Route B — NH-${Math.floor(Math.random() * 60) + 1}`,
         route_eta: eta,
         alternate_route_eta: Math.round(eta * 1.15),
-        delay_risk: d > 400 ? 'high' : d > 200 ? 'medium' : 'low',
+        delay_risk: risk,
         cost: Math.round(d * (vehicle === 'Truck' ? 18 : vehicle === 'Van' ? 12 : 7)),
         assigned_driver: 'Driver 1',
         analysis: 'Route optimized based on current traffic and weather conditions.',
       })
       const fallbackEta = Math.round((Number(form.distance) / 60) * 60)
       setScheduledTime(getScheduledDelivery(fallbackEta))
+      setMapShipment({
+        id: 'PREVIEW',
+        source: form.source, destination: form.destination,
+        distance: d, weight: w,
+        priority: form.priority, eta, delay_risk: risk,
+        vehicle, route: `Route A`, status: 'in_transit',
+        assigned_driver: 'D1', ai_analysis: 'Route optimized based on current conditions.',
+      })
     }
     setPlanLoading(false)
   }
@@ -516,6 +538,41 @@ function OperatorContent() {
                     </div>
                   </div>
                 ))}
+              </div>
+            </div>
+
+            {/* ── ROUTE MAP ── */}
+            <div className="col-span-12 card !p-0 overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-100">
+                <div>
+                  <h2 className="font-bold text-[#111111]">Route Map</h2>
+                  <p className="text-xs text-zinc-400 mt-0.5">Primary route · Alternate route · Live truck position · Reroute approval</p>
+                </div>
+                {mapShipment && (
+                  <div className="flex items-center gap-2 text-xs text-zinc-500">
+                    <span className="font-mono bg-zinc-100 px-2 py-0.5 rounded text-zinc-700">{mapShipment.source} → {mapShipment.destination}</span>
+                  </div>
+                )}
+              </div>
+              <div className="p-4">
+                <OperatorMap shipment={mapShipment} />
+              </div>
+            </div>
+
+            {/* ── CAMERA VISUAL INTELLIGENCE ── */}
+            <div className="col-span-12 card !p-0 overflow-hidden">
+              <div className="flex items-center justify-between px-5 py-3.5 border-b border-zinc-100">
+                <div>
+                  <h2 className="font-bold text-[#111111]">Camera Visual Intelligence</h2>
+                  <p className="text-xs text-zinc-400 mt-0.5">AI-powered video analysis · Real-time detection · Auto reroute</p>
+                </div>
+                <span className="text-xs bg-purple-50 text-purple-600 font-bold px-2 py-0.5 rounded-full">AI Vision</span>
+              </div>
+              <div className="p-4">
+                <VisualIntelligence
+                  source={mapShipment?.source ?? 'Bangalore'}
+                  destination={mapShipment?.destination ?? 'Chennai'}
+                />
               </div>
             </div>
 
