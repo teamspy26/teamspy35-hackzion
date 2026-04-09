@@ -1,5 +1,5 @@
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
 import type { Role } from '@/lib/authHelpers'
@@ -13,7 +13,7 @@ const ROLES: { value: Role; label: string }[] = [
   { value: 'client', label: 'Client' },
 ]
 
-export default function LoginPage() {
+function LoginForm() {
   const { user, role, loading, login, register } = useAuth()
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -248,4 +248,8 @@ function getFirebaseError(e: unknown): string {
     return e.message
   }
   return 'Something went wrong. Please try again.'
+}
+
+export default function LoginPage() {
+  return <Suspense fallback={<div>Loading...</div>}><LoginForm /></Suspense>;
 }

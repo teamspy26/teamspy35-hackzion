@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/context/AuthContext'
 import Sidebar from '@/components/Sidebar'
 import ShipmentTable from '@/components/ShipmentTable'
 import RiskBadge from '@/components/RiskBadge'
@@ -12,8 +13,7 @@ import {
   CheckCircle, ChevronDown, Loader2, CloudRain, Wind,
   IndianRupee, User, Zap, RefreshCw, CalendarClock,
   Database, Wifi, Brain, Server, BarChart2,
-  PawPrint, AlertTriangle, Shield, Train,
-} from 'lucide-react'
+  PawPrint, AlertTriangle, Shield, Train, LogOut } from 'lucide-react'
 import { getTraffic, getWeather, TRAFFIC_META, WEATHER_META, getScheduledDelivery } from '@/lib/realtime'
 
 interface PetPlan {
@@ -64,6 +64,7 @@ const riskColorMap: Record<string, string> = {
 }
 
 function OperatorContent() {
+  const { logout } = useAuth()
   const [form, setForm] = useState<FormData>(INITIAL_FORM)
   const [aiPlan, setAiPlan] = useState<AIPlan | null>(null)
   const [planLoading, setPlanLoading] = useState(false)
@@ -184,8 +185,7 @@ function OperatorContent() {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} onCollapse={setSidebarCollapsed} />
-      <div className={`flex-1 min-w-0 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-60'}`}>
+      <div className={`flex-1 min-w-0 transition-all duration-300`}>
         <div className="max-w-[1400px] mx-auto px-6 py-7">
 
           {/* Header */}
@@ -199,6 +199,15 @@ function OperatorContent() {
                   {liveData ? 'Firebase Live' : 'Demo data'}
                 </span>
               </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-brand-yellow rounded-full text-black font-bold text-lg shadow-sm border border-yellow-200">
+                👤
+              </div>
+              <button onClick={logout} className="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-bold transition-all border border-red-200">
+                <LogOut size={16} />
+                Logout
+              </button>
+            </div>
             </div>
             <div className="flex items-center gap-6">
               <div className="text-center"><div className="text-3xl font-bold text-[#111111]">{shipments.length}</div><div className="text-xs text-zinc-400">Total</div></div>

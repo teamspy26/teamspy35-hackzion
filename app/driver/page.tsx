@@ -10,14 +10,14 @@ import { useAuth } from '@/context/AuthContext'
 import {
   Truck, Clock, CheckCircle, Play, AlertTriangle,
   Sparkles, Navigation, Package, ChevronRight, Activity,
-  Loader2, Route, Shield,
-} from 'lucide-react'
+  Loader2, Route, Shield, LogOut } from 'lucide-react'
 import clsx from 'clsx'
 
 const DRIVER_ID = 'D1'
 const DRIVER = mockDrivers.find(d => d.id === DRIVER_ID)!
 
 function DriverContent() {
+  const { logout } = useAuth()
   const { user } = useAuth()
   const [shipments, setShipments] = useState<Shipment[]>(mockShipments)
   const [updatingId, setUpdatingId] = useState<string | null>(null)
@@ -104,8 +104,7 @@ function DriverContent() {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} onCollapse={setSidebarCollapsed} />
-      <div className={`flex-1 min-w-0 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-60'}`}>
+      <div className={`flex-1 min-w-0 transition-all duration-300`}>
         <div className="max-w-[1400px] mx-auto px-6 py-7">
 
           {/* Header */}
@@ -119,6 +118,15 @@ function DriverContent() {
                   {liveData ? 'Firebase Live' : 'Demo data'}
                 </span>
               </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-brand-yellow rounded-full text-black font-bold text-lg shadow-sm border border-yellow-200">
+                👤
+              </div>
+              <button onClick={logout} className="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-bold transition-all border border-red-200">
+                <LogOut size={16} />
+                Logout
+              </button>
+            </div>
             </div>
             <div className="flex items-center gap-6">
               <div className="text-center"><div className="text-3xl font-bold text-[#111111]">{myShipments.length}</div><div className="text-xs text-zinc-400">Assigned</div></div>

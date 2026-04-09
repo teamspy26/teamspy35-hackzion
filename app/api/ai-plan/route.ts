@@ -5,7 +5,7 @@ import { join } from 'path'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-function loadHistoricalData() {
+function loadHistoricalData(distance: number) {
   try {
     const filePath = join(process.cwd(), 'data', 'shipments.json')
     const raw = readFileSync(filePath, 'utf-8')
@@ -15,7 +15,7 @@ function loadHistoricalData() {
       delivery_time: number; delay: number; route: string; vehicle: string; cost: number;
     }> = JSON.parse(raw)
     // Pick 3 most similar shipments by distance proximity
-    const dist = body.distance || 200
+    const dist = distance || 200
     shipments.sort((a, b) => Math.abs(a.distance - dist) - Math.abs(b.distance - dist))
     return shipments.slice(0, 3).map(s =>
       `${s.source}→${s.destination} ${s.distance}km ${s.vehicle} ${s.traffic}traffic ${s.weather} ETA:${s.delivery_time}min delay:${s.delay}min cost:₹${s.cost}`
@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
   const { source, destination, distance, weight, priority, traffic = 'medium', weather = 'clear' } = body
 
-  const historicalContext = loadHistoricalData()
+  const historicalContext = loadHistoricalData(distance)
 
   try {
     const prompt = `You are a logistics AI planner. Given a shipment, output ONLY valid JSON with no markdown, no code blocks, just raw JSON.

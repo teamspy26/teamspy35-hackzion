@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { useAuth } from '@/context/AuthContext'
 import Sidebar from '@/components/Sidebar'
 import StatCard from '@/components/StatCard'
 import ShipmentTable from '@/components/ShipmentTable'
@@ -15,10 +16,10 @@ import {
 } from 'recharts'
 import {
   Package, AlertTriangle, Clock, Activity, ArrowUpRight,
-  Users, Truck, Database, Wifi, Route, Zap, IndianRupee,
-} from 'lucide-react'
+  Users, Truck, Database, Wifi, Route, Zap, IndianRupee, LogOut } from 'lucide-react'
 
 function AdminDashboardContent() {
+  const { logout } = useAuth()
   const [shipments, setShipments] = useState<Shipment[]>(mockShipments)
   const [activeTab, setActiveTab] = useState<'all' | 'delayed' | 'transit'>('all')
   const [liveData, setLiveData] = useState(false)
@@ -54,8 +55,7 @@ function AdminDashboardContent() {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} onCollapse={setSidebarCollapsed} />
-      <div className={`flex-1 min-w-0 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-60'}`}>
+      <div className={`flex-1 min-w-0 transition-all duration-300`}>
         <div className="max-w-[1400px] mx-auto px-6 py-7">
 
           {/* Header */}
@@ -69,6 +69,15 @@ function AdminDashboardContent() {
                   {liveData ? 'Live' : 'Demo data'}
                 </span>
               </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-brand-yellow rounded-full text-black font-bold text-lg shadow-sm border border-yellow-200">
+                👤
+              </div>
+              <button onClick={logout} className="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-bold transition-all border border-red-200">
+                <LogOut size={16} />
+                Logout
+              </button>
+            </div>
             </div>
             <div className="flex items-center gap-8">
               <div className="text-center"><div className="text-3xl font-bold text-[#111111]">📦 {total * 12}</div><div className="text-zinc-500 text-xs mt-0.5">Total Shipments</div></div>

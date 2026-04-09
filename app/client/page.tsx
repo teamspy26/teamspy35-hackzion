@@ -1,13 +1,14 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/context/AuthContext'
 import Sidebar from '@/components/Sidebar'
 import AuthGuard from '@/components/AuthGuard'
-import { createShipment } from '@/lib/firestore'
+import { createShipment, getShipments, Shipment } from '@/lib/firestore'
 import {
   PawPrint, Thermometer, AlertTriangle, CheckCircle, Sparkles,
   Send, Loader2, MapPin, Route, Clock, Shield, ChevronDown,
-  Navigation, Droplets, Wind, Train, Truck, Plane, Zap,
-} from 'lucide-react'
+  Navigation, Droplets, Wind, Train, Truck, Plane, Zap, Package, Info
+, LogOut } from 'lucide-react'
 
 interface PetPlan {
   comfort_score: number
@@ -67,6 +68,7 @@ function ComfortGauge({ score }: { score: number }) {
 }
 
 function ClientContent() {
+  const { logout } = useAuth()
   const [petType, setPetType]     = useState<'dog' | 'cat'>('dog')
   const [weight, setWeight]       = useState('')
   const [age, setAge]             = useState('')
@@ -144,8 +146,7 @@ function ClientContent() {
 
   return (
     <div className="min-h-screen flex">
-      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} onCollapse={setSidebarCollapsed} />
-      <div className={`flex-1 min-w-0 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-60'}`}>
+      <div className={`flex-1 min-w-0 transition-all duration-300`}>
         <div className="max-w-[1400px] mx-auto px-6 py-7">
 
           {/* Header */}
@@ -155,6 +156,15 @@ function ClientContent() {
                 <span className="text-3xl">🐾</span>
                 <h1 className="text-4xl font-bold text-[#111111] leading-tight">Pet Transport<br />Safety Module</h1>
               </div>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 bg-brand-yellow rounded-full text-black font-bold text-lg shadow-sm border border-yellow-200">
+                👤
+              </div>
+              <button onClick={logout} className="flex items-center gap-2 px-4 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-bold transition-all border border-red-200">
+                <LogOut size={16} />
+                Logout
+              </button>
+            </div>
               <p className="text-zinc-500 text-sm ml-10">AI-powered comfort scoring, heat risk detection & smart rest stop planning</p>
             </div>
             <div className="flex items-center gap-6">
