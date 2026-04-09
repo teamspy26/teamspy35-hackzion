@@ -1,0 +1,111 @@
+import { Shipment, Driver } from './firestore'
+
+export const mockDrivers: Driver[] = [
+  { id: 'D1', name: 'Arjun Singh', vehicle: 'Van', status: 'on_delivery' },
+  { id: 'D2', name: 'Priya Sharma', vehicle: 'Truck', status: 'on_delivery' },
+  { id: 'D3', name: 'Ravi Kumar', vehicle: 'Bike', status: 'available' },
+]
+
+export const mockShipments: Shipment[] = [
+  {
+    id: 'S1',
+    source: 'Bangalore',
+    destination: 'Chennai',
+    distance: 350,
+    weight: 50,
+    priority: 'high',
+    eta: 120,
+    delay_risk: 'medium',
+    vehicle: 'Van',
+    route: 'Route B (NH-44)',
+    status: 'in_transit',
+    assigned_driver: 'D1',
+    ai_analysis: 'High traffic expected on NH-48. Recommended alternate via NH-44.',
+  },
+  {
+    id: 'S2',
+    source: 'Mumbai',
+    destination: 'Pune',
+    distance: 150,
+    weight: 30,
+    priority: 'medium',
+    eta: 60,
+    delay_risk: 'low',
+    vehicle: 'Bike',
+    route: 'Route A (Express Highway)',
+    status: 'delivered',
+    assigned_driver: 'D3',
+    ai_analysis: 'Clear route. No delays expected.',
+  },
+  {
+    id: 'S3',
+    source: 'Delhi',
+    destination: 'Agra',
+    distance: 210,
+    weight: 80,
+    priority: 'high',
+    eta: 180,
+    delay_risk: 'high',
+    vehicle: 'Truck',
+    route: 'Route C (Yamuna Expressway)',
+    status: 'delayed',
+    assigned_driver: 'D2',
+    ai_analysis: 'Heavy fog alert. Delay of ~45 mins expected. Consider rescheduling.',
+  },
+  {
+    id: 'S4',
+    source: 'Hyderabad',
+    destination: 'Vijayawada',
+    distance: 270,
+    weight: 45,
+    priority: 'low',
+    eta: 150,
+    delay_risk: 'low',
+    vehicle: 'Van',
+    route: 'Route A (NH-65)',
+    status: 'pending',
+    assigned_driver: 'D1',
+    ai_analysis: 'Optimal conditions. Estimated on-time delivery.',
+  },
+  {
+    id: 'S5',
+    source: 'Kolkata',
+    destination: 'Bhubaneswar',
+    distance: 440,
+    weight: 100,
+    priority: 'high',
+    eta: 240,
+    delay_risk: 'medium',
+    vehicle: 'Truck',
+    route: 'Route B (NH-16)',
+    status: 'in_transit',
+    assigned_driver: 'D2',
+    ai_analysis: 'Rain forecast in route segment 3. Medium delay risk.',
+  },
+]
+
+export const shipmentsByMonth = [
+  { month: 'Jan', total: 12, delayed: 2 },
+  { month: 'Feb', total: 18, delayed: 3 },
+  { month: 'Mar', total: 15, delayed: 1 },
+  { month: 'Apr', total: 22, delayed: 5 },
+  { month: 'May', total: 30, delayed: 4 },
+  { month: 'Jun', total: 28, delayed: 6 },
+  { month: 'Jul', total: 35, delayed: 3 },
+  { month: 'Aug', total: 40, delayed: 7 },
+  { month: 'Sep', total: 32, delayed: 2 },
+  { month: 'Oct', total: 45, delayed: 8 },
+  { month: 'Nov', total: 38, delayed: 5 },
+]
+
+export const priorityData = [
+  { name: 'High', value: 45, color: '#111111' },
+  { name: 'Medium', value: 35, color: '#EAB308' },
+  { name: 'Low', value: 20, color: '#D4D4D8' },
+]
+
+export const vehicleData = [
+  { name: 'Van', value: 40 },
+  { name: 'Truck', value: 35 },
+  { name: 'Bike', value: 25 },
+]
