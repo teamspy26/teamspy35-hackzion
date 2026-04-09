@@ -46,19 +46,14 @@ export default function Navbar() {
           </span>
         </Link>
 
-        {/* Nav links — only show if logged in */}
+        {/* Nav link — only the current user's dashboard */}
         {user && role && (
           <div className="flex items-center gap-1">
-            {navLinks.map(link => (
+            {navLinks.filter(link => link.role === role).map(link => (
               <Link
                 key={link.href}
                 href={link.href}
-                className={clsx(
-                  'px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150',
-                  pathname.startsWith(link.href)
-                    ? 'bg-brand-yellow text-black'
-                    : 'text-zinc-400 hover:text-white hover:bg-white/10'
-                )}
+                className="px-4 py-1.5 rounded-lg text-sm font-medium bg-brand-yellow text-black"
               >
                 {link.label}
               </Link>

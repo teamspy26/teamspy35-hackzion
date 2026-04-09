@@ -1,74 +1,90 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/context/AuthContext'
-import { DEMO_ACCOUNTS } from '@/lib/authHelpers'
 import type { Role } from '@/lib/authHelpers'
-import { Package, BarChart3, Truck, Sparkles, Loader2, Eye, EyeOff, Shield, Zap } from 'lucide-react'
+import { Package, Loader2, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import clsx from 'clsx'
 
-const roles: { role: Role; label: string; subtitle: string; icon: React.ReactNode; description: string; color: string }[] = [
-  {
-    role: 'admin',
-    label: 'Admin',
-    subtitle: 'Manager Dashboard',
-    icon: <BarChart3 size={26} />,
-    description: 'Monitor fleet, AI insights, alerts, shipment analytics',
-    color: 'bg-[#111111] text-white',
-  },
-  {
-    role: 'operator',
-    label: 'Operator',
-    subtitle: 'Control Panel',
-    icon: <Package size={26} />,
-    description: 'Create shipments, trigger AI planner, manage routes',
-    color: 'bg-white text-[#111111]',
-  },
-  {
-    role: 'driver',
-    label: 'Driver',
-    subtitle: 'Execution Panel',
-    icon: <Truck size={26} />,
-    description: 'View assigned routes, update delivery status, AI alerts',
-    color: 'bg-white text-[#111111]',
-  },
+const ROLES: { value: Role; label: string }[] = [
+  { value: 'admin', label: 'Admin' },
+  { value: 'operator', label: 'Operator' },
+  { value: 'driver', label: 'Driver' },
+  { value: 'client', label: 'Client' },
 ]
 
 export default function LoginPage() {
-  const { user, role, loading, loginAsRole } = useAuth()
+  const { user, role, loading, login, register } = useAuth()
   const router = useRouter()
-  const [selectedRole, setSelectedRole] = useState<Role | null>(null)
+  const searchParams = useSearchParams()
+
+  const [mode, setMode] = useState<'login' | 'register'>('login')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
+  const [selectedRole, setSelectedRole] = useState<Role>(() => {
+    const r = searchParams.get('role')
+    return (r === 'admin' || r === 'operator' || r === 'driver' || r === 'client') ? r : 'admin'
+  })
   const [showPassword, setShowPassword] = useState(false)
-  const [signingIn, setSigningIn] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState('')
 
-  // Already logged in → redirect
   useEffect(() => {
     if (!loading && user && role) {
       router.replace(`/${role}`)
     }
   }, [user, role, loading, router])
 
-  async function handleLogin(r: Role) {
-    setSelectedRole(r)
-    setSigningIn(true)
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
     setError('')
+    setSubmitting(true)
     try {
-      await loginAsRole(r)
-      router.replace(`/${r}`)
+      if (mode === 'login') {
+        const resolvedRole = await login(email, password)
+        router.replace(`/${resolvedRole}`)
+      } else {
+        if (!name.trim()) {
+          setError('Name is required.')
+          setSubmitting(false)
+          return
+        }
+        await register(email, password, selectedRole, name.trim())
+        router.replace(`/${selectedRole}`)
+      }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : 'Login failed. Please try again.')
-      setSigningIn(false)
-      setSelectedRole(null)
+      setError(getFirebaseError(e))
+      setSubmitting(false)
     }
   }
 
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <div className="w-10 h-10 border-2 border-brand-yellow border-t-transparent rounded-full animate-spin" />
-          <p className="text-zinc-400 text-sm">Loading…</p>
+        <div className="w-8 h-8 border-2 border-brand-yellow border-t-transparent rounded-full animate-spin" />
+      </div>
+    )
+  }
+
+  if (submitting) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#111111]">
+        <div className="flex flex-col items-center gap-6">
+          <div className="w-16 h-16 bg-brand-yellow rounded-2xl flex items-center justify-center">
+            <Package size={28} className="text-black" />
+          </div>
+          <div>
+            <p className="text-white text-lg font-bold text-center">
+              {mode === 'login' ? 'Signing you in…' : 'Creating your account…'}
+            </p>
+            <p className="text-zinc-400 text-sm text-center mt-1">Just a moment</p>
+          </div>
+          <div className="flex gap-1.5">
+            <div className="w-2 h-2 rounded-full bg-brand-yellow animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-2 h-2 rounded-full bg-brand-yellow animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-2 h-2 rounded-full bg-brand-yellow animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
         </div>
       </div>
     )
@@ -86,149 +102,150 @@ export default function LoginPage() {
             Logi<span className="text-brand-yellow">Flow</span>
           </span>
         </div>
-        <div className="ml-auto flex items-center gap-1.5 text-xs text-zinc-400">
-          <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-          Demo Mode Active
-        </div>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-6 py-12">
-        <div className="w-full max-w-4xl">
-          {/* Hero */}
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 bg-brand-yellow/20 border border-brand-yellow/30 text-yellow-800 text-xs font-semibold px-3 py-1.5 rounded-full mb-5">
-              <Sparkles size={12} />
-              AI-Powered Logistics Platform
-            </div>
-            <h1 className="text-5xl font-extrabold text-[#111111] mb-3">
-              Welcome to Logi<span className="text-brand-yellow">Flow</span>
+        <div className="w-full max-w-md">
+          {/* Header */}
+          <div className="text-center mb-8">
+            {searchParams.get('role') && (
+              <div className="inline-flex items-center gap-2 bg-brand-yellow/20 border border-brand-yellow/30 text-yellow-800 text-xs font-semibold px-3 py-1.5 rounded-full mb-4 capitalize">
+                {selectedRole} Dashboard
+              </div>
+            )}
+            <h1 className="text-3xl font-extrabold text-[#111111]">
+              {mode === 'login' ? 'Welcome back' : 'Create account'}
             </h1>
-            <p className="text-zinc-500 text-base">
-              Select your role to enter the demo. No sign-up required.
+            <p className="text-zinc-500 text-sm mt-2">
+              {mode === 'login'
+                ? `Sign in to access the ${selectedRole} dashboard`
+                : `Register as ${selectedRole} to access the platform`}
             </p>
           </div>
 
-          {/* Role cards */}
-          <div className="grid grid-cols-3 gap-4 mb-6">
-            {roles.map(r => {
-              const isLoading = signingIn && selectedRole === r.role
-              const creds = DEMO_ACCOUNTS[r.role]
-              const isAdmin = r.role === 'admin'
+          {/* Card */}
+          <div className="bg-white rounded-2xl p-8 shadow-card border border-zinc-100">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {/* Name (register only) */}
+              {mode === 'register' && (
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-600 mb-1.5">Full Name</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={e => setName(e.target.value)}
+                    required
+                    placeholder="Your full name"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-zinc-200 text-sm focus:border-brand-yellow focus:outline-none"
+                  />
+                </div>
+              )}
 
-              return (
-                <div
-                  key={r.role}
-                  className={clsx(
-                    'rounded-2xl p-6 shadow-card flex flex-col gap-4 border-2 transition-all duration-200',
-                    isAdmin ? 'bg-[#111111] border-transparent' : 'bg-white border-zinc-100 hover:border-brand-yellow/40',
-                    signingIn && selectedRole !== r.role && 'opacity-40 pointer-events-none'
-                  )}
-                >
-                  {/* Icon + title */}
-                  <div className="flex items-start justify-between">
-                    <div className={clsx(
-                      'w-11 h-11 rounded-xl flex items-center justify-center',
-                      isAdmin ? 'bg-brand-yellow text-black' : 'bg-zinc-100 text-zinc-600'
-                    )}>
-                      {r.icon}
-                    </div>
-                    <span className={clsx(
-                      'text-xs font-semibold px-2 py-1 rounded-full',
-                      isAdmin ? 'bg-white/10 text-zinc-300' : 'bg-zinc-100 text-zinc-500'
-                    )}>
-                      {r.subtitle}
-                    </span>
-                  </div>
+              {/* Email */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-600 mb-1.5">Email</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  placeholder="you@example.com"
+                  className="w-full px-4 py-3 rounded-lg border-2 border-zinc-200 text-sm focus:border-brand-yellow focus:outline-none"
+                />
+              </div>
 
-                  <div>
-                    <h2 className={clsx('text-xl font-bold mb-1', isAdmin ? 'text-white' : 'text-[#111111]')}>
-                      {r.label}
-                    </h2>
-                    <p className={clsx('text-sm', isAdmin ? 'text-zinc-400' : 'text-zinc-500')}>
-                      {r.description}
-                    </p>
-                  </div>
-
-                  {/* Demo credentials */}
-                  <div className={clsx(
-                    'rounded-xl p-3 text-xs space-y-1 font-mono',
-                    isAdmin ? 'bg-white/10' : 'bg-zinc-50 border border-zinc-100'
-                  )}>
-                    <div className={clsx('flex justify-between', isAdmin ? 'text-zinc-300' : 'text-zinc-500')}>
-                      <span>Email</span>
-                      <span className="font-semibold truncate ml-2">{creds.email}</span>
-                    </div>
-                    <div className={clsx('flex justify-between', isAdmin ? 'text-zinc-300' : 'text-zinc-500')}>
-                      <span>Pass</span>
-                      <span className="font-semibold">
-                        {showPassword ? creds.password : '••••••••••'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Login button */}
+              {/* Password */}
+              <div>
+                <label className="block text-xs font-semibold text-zinc-600 mb-1.5">Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    required
+                    placeholder="••••••••"
+                    className="w-full px-4 py-3 rounded-lg border-2 border-zinc-200 text-sm focus:border-brand-yellow focus:outline-none pr-10"
+                  />
                   <button
-                    onClick={() => handleLogin(r.role)}
-                    disabled={signingIn}
-                    className={clsx(
-                      'w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm transition-all',
-                      isAdmin
-                        ? 'bg-brand-yellow text-black hover:bg-yellow-400'
-                        : 'bg-[#111111] text-white hover:bg-zinc-800',
-                      signingIn && 'opacity-60 cursor-not-allowed'
-                    )}
+                    type="button"
+                    onClick={() => setShowPassword(p => !p)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
                   >
-                    {isLoading ? (
-                      <>
-                        <Loader2 size={15} className="animate-spin" />
-                        Signing in…
-                      </>
-                    ) : (
-                      `Enter as ${r.label}`
-                    )}
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
                 </div>
-              )
-            })}
-          </div>
-
-          {/* Show/hide password toggle */}
-          <div className="flex justify-center mb-4">
-            <button
-              onClick={() => setShowPassword(p => !p)}
-              className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-zinc-600 transition-colors"
-            >
-              {showPassword ? <EyeOff size={13} /> : <Eye size={13} />}
-              {showPassword ? 'Hide' : 'Show'} demo credentials
-            </button>
-          </div>
-
-          {error && (
-            <div className="max-w-sm mx-auto bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3 text-center">
-              {error}
-            </div>
-          )}
-
-          {/* Feature strip */}
-          <div className="grid grid-cols-3 gap-3 mt-8">
-            {[
-              { icon: <Sparkles size={14} className="text-brand-yellow" />, label: 'Claude AI', desc: 'Real-time route planning & insights' },
-              { icon: <Zap size={14} className="text-brand-yellow" />, label: 'Firebase Live', desc: 'Data syncs instantly across all roles' },
-              { icon: <Shield size={14} className="text-brand-yellow" />, label: 'Role-Based', desc: '3 specialized dashboards' },
-            ].map(f => (
-              <div key={f.label} className="bg-white rounded-xl px-4 py-3 flex items-center gap-3 shadow-card">
-                <div className="w-7 h-7 bg-brand-yellow/10 rounded-lg flex items-center justify-center shrink-0">
-                  {f.icon}
-                </div>
-                <div>
-                  <div className="text-xs font-bold text-[#111111]">{f.label}</div>
-                  <div className="text-xs text-zinc-400">{f.desc}</div>
-                </div>
               </div>
-            ))}
+
+              {/* Role (register only) */}
+              {mode === 'register' && (
+                <div>
+                  <label className="block text-xs font-semibold text-zinc-600 mb-1.5">Role</label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {ROLES.map(r => (
+                      <button
+                        key={r.value}
+                        type="button"
+                        onClick={() => setSelectedRole(r.value)}
+                        className={clsx(
+                          'py-2.5 rounded-lg border-2 text-sm font-semibold transition-all',
+                          selectedRole === r.value
+                            ? 'border-brand-yellow bg-brand-yellow/10 text-[#111111]'
+                            : 'border-zinc-200 text-zinc-500 hover:border-zinc-300'
+                        )}
+                      >
+                        {r.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Error */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-lg px-4 py-3">
+                  {error}
+                </div>
+              )}
+
+              {/* Submit */}
+              <button
+                type="submit"
+                className="w-full flex items-center justify-center gap-2 bg-[#111111] text-white font-bold py-3 rounded-lg hover:bg-zinc-800 transition-all"
+              >
+                {mode === 'login' ? 'Sign In' : 'Create Account'}
+                <ArrowRight size={16} />
+              </button>
+            </form>
           </div>
+
+          {/* Toggle mode */}
+          <p className="text-center text-sm text-zinc-500 mt-5">
+            {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
+            <button
+              onClick={() => { setMode(mode === 'login' ? 'register' : 'login'); setError('') }}
+              className="text-[#111111] font-semibold hover:text-brand-yellow transition-colors"
+            >
+              {mode === 'login' ? 'Register' : 'Sign In'}
+            </button>
+          </p>
         </div>
       </div>
     </div>
   )
+}
+
+function getFirebaseError(e: unknown): string {
+  if (e instanceof Error) {
+    const msg = (e as { code?: string }).code ?? ''
+    if (msg === 'auth/user-not-found' || msg === 'auth/wrong-password' || msg === 'auth/invalid-credential')
+      return 'Invalid email or password.'
+    if (msg === 'auth/email-already-in-use')
+      return 'An account with this email already exists.'
+    if (msg === 'auth/weak-password')
+      return 'Password must be at least 6 characters.'
+    if (msg === 'auth/invalid-email')
+      return 'Please enter a valid email address.'
+    return e.message
+  }
+  return 'Something went wrong. Please try again.'
 }

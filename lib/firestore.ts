@@ -26,6 +26,14 @@ export interface Shipment {
   assigned_driver: string
   ai_analysis?: string
   createdAt?: Timestamp
+  // Pet transport fields
+  pet_type?: 'dog' | 'cat'
+  pet_weight?: number
+  pet_age?: number
+  pet_comfort_score?: number
+  pet_risk?: 'LOW' | 'MEDIUM' | 'HIGH'
+  pet_safe_mode?: string
+  pet_rest_stops?: string[]
 }
 
 export interface Driver {

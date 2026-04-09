@@ -109,3 +109,12 @@ export const vehicleData = [
   { name: 'Truck', value: 35 },
   { name: 'Bike', value: 25 },
 ]
+
+// Derived from data/shipments.json — 20 historical records
+export const delayDistribution = [
+  { range: '0 min',  count: 7, fill: '#22c55e' },
+  { range: '1–20',   count: 6, fill: '#86efac' },
+  { range: '21–40',  count: 4, fill: '#eab308' },
+  { range: '41–60',  count: 2, fill: '#f97316' },
+  { range: '60+',    count: 1, fill: '#ef4444' },
+]
