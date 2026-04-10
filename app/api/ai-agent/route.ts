@@ -1,8 +1,8 @@
 // 3.2 Prediction Engine — focused AI endpoint for ETA, delay, and cost prediction
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => ({}))
@@ -38,13 +38,13 @@ Return JSON only, no markdown:
 }`
 
   try {
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 200,
+    const message = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
     })
-    const raw = (message.content[0] as { text: string }).text.trim()
-    const result = JSON.parse(raw)
+    const raw = message.choices[0].message.content?.trim() || '{}'
+    const cleanJson = raw.replace(/```json/gi, '').replace(/```/g, '').trim()
+    const result = JSON.parse(cleanJson)
     return NextResponse.json({ success: true, data: result })
   } catch {
     return NextResponse.json({ success: true, data: fallback(distance, traffic, weather, weight, priority) })

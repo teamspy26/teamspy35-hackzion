@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 export async function POST(req: NextRequest) {
   try {
@@ -35,14 +35,14 @@ Return JSON:
   "riskScore": <number 0-100>
 }`
 
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 512,
+    const message = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const raw = (message.content[0] as { text: string }).text.trim()
-    const result = JSON.parse(raw)
+    const raw = message.choices[0].message.content?.trim() || '{}'
+    const cleanJson = raw.replace(/```json/gi, '').replace(/```/g, '').trim()
+    const result = JSON.parse(cleanJson)
     return NextResponse.json({ success: true, data: result })
   } catch (error) {
     console.error('AI insights error:', error)

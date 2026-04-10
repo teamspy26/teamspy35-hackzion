@@ -22,10 +22,12 @@ export interface Shipment {
   delay_risk: 'low' | 'medium' | 'high'
   vehicle: string
   route: string
-  status: 'pending' | 'in_transit' | 'delivered' | 'delayed'
+  status: 'quote_pending' | 'pending' | 'in_transit' | 'delivered' | 'delayed'
   assigned_driver: string
   ai_analysis?: string
   createdAt?: Timestamp
+  negotiated_price?: number
+  cargo_type?: string
   // Pet transport fields
   pet_type?: 'dog' | 'cat'
   pet_weight?: number

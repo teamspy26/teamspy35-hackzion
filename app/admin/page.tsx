@@ -10,6 +10,7 @@ import StatusBadge from '@/components/StatusBadge'
 import AuthGuard from '@/components/AuthGuard'
 import AdminMap from '@/components/maps/AdminMap'
 import CrimeRiskAnalyzer from '@/components/CrimeRiskAnalyzer'
+import AlertCenter from '@/components/AlertCenter'
 import { mockShipments, shipmentsByMonth, delayDistribution } from '@/lib/mockData'
 import { Shipment, subscribeToShipments } from '@/lib/firestore'
 import {
@@ -71,6 +72,7 @@ function AdminDashboardContent() {
                   {liveData ? 'Live' : 'Demo data'}
                 </span>
               </div>
+            </div>
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 bg-brand-yellow rounded-full text-black font-bold text-lg shadow-sm border border-yellow-200">
                 👤
@@ -80,7 +82,7 @@ function AdminDashboardContent() {
                 Logout
               </button>
             </div>
-            </div>
+            
             <div className="flex items-center gap-8">
               <div className="text-center"><div className="text-3xl font-bold text-[#111111]">📦 {total * 12}</div><div className="text-zinc-500 text-xs mt-0.5">Total Shipments</div></div>
               <div className="text-center"><div className="text-3xl font-bold text-[#111111]">🚚 {inTransit * 8}</div><div className="text-zinc-500 text-xs mt-0.5">Active Routes</div></div>
@@ -313,6 +315,21 @@ function AdminDashboardContent() {
                 <span className="text-xs bg-red-50 text-red-600 font-bold px-2 py-0.5 rounded-full ml-auto">NCRB Dataset</span>
               </div>
               <CrimeRiskAnalyzer />
+            </div>
+
+            {/* Alert Center — email alerts to operators & drivers */}
+            <div className="col-span-12 card">
+              <div className="flex items-center gap-2 mb-5">
+                <div className="w-7 h-7 bg-brand-yellow/10 rounded-lg flex items-center justify-center">
+                  <Zap size={14} className="text-brand-yellow" />
+                </div>
+                <h3 className="font-bold text-[#111111]">Alert Center</h3>
+                <span className="text-xs bg-zinc-100 text-zinc-600 font-semibold px-2 py-0.5 rounded-full">Gmail SMTP</span>
+                <span className="text-xs bg-green-50 text-green-600 font-bold px-2 py-0.5 rounded-full ml-auto flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" /> Live Email
+                </span>
+              </div>
+              <AlertCenter />
             </div>
 
             {/* Shipment table */}

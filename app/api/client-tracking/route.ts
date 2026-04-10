@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { db } from '@/lib/firebase'
 import { doc, getDoc } from 'firebase/firestore'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 export async function POST(req: NextRequest) {
   try {
@@ -45,13 +45,12 @@ Draft a 2-3 paragraph response for the customer.
 4. DO NOT use markdown formatting like **bold** or *italics*. Just return plain text paragraphs separated by two newlines.
 `
 
-    const message = await client.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 400,
+    const message = await client.chat.completions.create({
+      model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const resultText = (message.content[0] as { text: string }).text.trim()
+    const resultText = message.choices[0].message.content?.trim() || ''
     
     return NextResponse.json({ 
       success: true, 

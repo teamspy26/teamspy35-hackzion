@@ -7,7 +7,7 @@ import RiskBadge from '@/components/RiskBadge'
 import StatusBadge from '@/components/StatusBadge'
 import AuthGuard from '@/components/AuthGuard'
 import { mockShipments } from '@/lib/mockData'
-import { Shipment, createShipment, subscribeToShipments } from '@/lib/firestore'
+import { Shipment, createShipment, subscribeToShipments, updateShipmentStatus } from '@/lib/firestore'
 import {
   Sparkles, Plus, Send, Package, Clock, Route, Truck,
   CheckCircle, ChevronDown, Loader2, CloudRain, Wind,
@@ -98,6 +98,15 @@ function OperatorContent() {
     })
     return () => unsub()
   }, [])
+
+  async function handleApproveQuote(id: string, price: number) {
+    if (!id) return;
+    try {
+      await updateShipmentStatus(id, 'pending' as any);
+    } catch(e) {
+      console.error('Failed to approve quote', e);
+    }
+  }
 
   async function handleAIPlan() {
     if (!form.source || !form.destination || !form.distance || !form.weight) {
@@ -221,6 +230,8 @@ function OperatorContent() {
                   {liveData ? 'Firebase Live' : 'Demo data'}
                 </span>
               </div>
+            </div>
+
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 bg-brand-yellow rounded-full text-black font-bold text-lg shadow-sm border border-yellow-200">
                 👤
@@ -230,7 +241,7 @@ function OperatorContent() {
                 Logout
               </button>
             </div>
-            </div>
+
             <div className="flex items-center gap-6">
               <div className="text-center"><div className="text-3xl font-bold text-[#111111]">{shipments.length}</div><div className="text-xs text-zinc-400">Total</div></div>
               <div className="text-center"><div className="text-3xl font-bold text-[#111111]">{autoPlanned}</div><div className="text-xs text-zinc-400">AI Planned</div></div>
@@ -615,7 +626,7 @@ function OperatorContent() {
                   {autoPlanned} of {shipments.length} AI-planned · 0 manual interventions
                 </div>
               </div>
-              <ShipmentTable shipments={shipments} />
+              <ShipmentTable shipments={shipments} onApproveQuote={handleApproveQuote} />
             </div>
 
           </div>

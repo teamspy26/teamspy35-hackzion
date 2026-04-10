@@ -163,6 +163,8 @@ function DriverContent() {
                   {liveData ? 'Firebase Live' : 'Demo data'}
                 </span>
               </div>
+            </div>
+
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 bg-brand-yellow rounded-full text-black font-bold text-lg shadow-sm border border-yellow-200">
                 👤
@@ -172,7 +174,7 @@ function DriverContent() {
                 Logout
               </button>
             </div>
-            </div>
+            
             <div className="flex items-center gap-6">
               <div className="text-center"><div className="text-3xl font-bold text-[#111111]">{myShipments.length}</div><div className="text-xs text-zinc-400">Assigned</div></div>
               <div className="text-center"><div className="text-3xl font-bold text-brand-yellow">{completedShipments.length}</div><div className="text-xs text-zinc-400">Delivered</div></div>

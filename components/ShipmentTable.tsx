@@ -2,14 +2,15 @@
 import { Shipment } from '@/lib/firestore'
 import StatusBadge from './StatusBadge'
 import RiskBadge from './RiskBadge'
-import { ArrowUpRight } from 'lucide-react'
+import { ArrowUpRight, CheckCircle2 } from 'lucide-react'
 
 interface Props {
   shipments: Shipment[]
   compact?: boolean
+  onApproveQuote?: (id: string, price: number) => void
 }
 
-export default function ShipmentTable({ shipments, compact }: Props) {
+export default function ShipmentTable({ shipments, compact, onApproveQuote }: Props) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -19,6 +20,7 @@ export default function ShipmentTable({ shipments, compact }: Props) {
             <th className="text-left text-xs font-semibold text-zinc-400 pb-3 pr-4">Route</th>
             <th className="text-left text-xs font-semibold text-zinc-400 pb-3 pr-4">Vehicle</th>
             <th className="text-left text-xs font-semibold text-zinc-400 pb-3 pr-4">ETA</th>
+            <th className="text-left text-xs font-semibold text-zinc-400 pb-3 pr-4">Price</th>
             <th className="text-left text-xs font-semibold text-zinc-400 pb-3 pr-4">Risk</th>
             <th className="text-left text-xs font-semibold text-zinc-400 pb-3">Status</th>
           </tr>
@@ -28,7 +30,7 @@ export default function ShipmentTable({ shipments, compact }: Props) {
             <tr key={s.id} className="hover:bg-zinc-50/50 transition-colors">
               <td className="py-3 pr-4">
                 <span className="font-mono font-bold text-[#111111] bg-zinc-100 px-2 py-0.5 rounded text-xs">
-                  {s.id}
+                  {s.id?.slice(0,6)}
                 </span>
               </td>
               <td className="py-3 pr-4">
@@ -45,10 +47,25 @@ export default function ShipmentTable({ shipments, compact }: Props) {
                 <span className="text-zinc-400 text-xs"> min</span>
               </td>
               <td className="py-3 pr-4">
+                {s.negotiated_price ? (
+                  <span className="font-semibold text-[#111111]">₹{s.negotiated_price}</span>
+                ) : (
+                  <span className="text-zinc-400 text-xs">-</span>
+                )}
+              </td>
+              <td className="py-3 pr-4">
                 <RiskBadge risk={s.delay_risk} />
               </td>
-              <td className="py-3">
-                <StatusBadge status={s.status} />
+              <td className="py-3 pr-4">
+                <StatusBadge status={s.status as any} />
+                {s.status === 'quote_pending' && onApproveQuote && (
+                  <button 
+                    onClick={() => onApproveQuote(s.id!, s.negotiated_price || 0)}
+                    className="ml-3 inline-flex items-center justify-center gap-1 bg-green-500 text-white rounded text-xs font-bold px-2 py-1 hover:bg-green-600 transition"
+                  >
+                    <CheckCircle2 size={12} /> Approve
+                  </button>
+                )}
               </td>
             </tr>
           ))}
