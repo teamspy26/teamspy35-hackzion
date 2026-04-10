@@ -1,7 +1,7 @@
 import clsx from 'clsx'
 
 interface Props {
-  status: 'quote_pending' | 'pending' | 'in_transit' | 'delivered' | 'delayed'
+  status: 'quote_pending' | 'pending' | 'in_transit' | 'delivered' | 'delayed' | 'rejected'
 }
 
 const config = {
@@ -10,6 +10,7 @@ const config = {
   in_transit: { label: 'In Transit', cls: 'bg-blue-100 text-blue-700 border border-blue-200' },
   delivered: { label: 'Delivered', cls: 'bg-green-100 text-green-700 border border-green-200' },
   delayed: { label: 'Delayed', cls: 'bg-red-100 text-red-700 border border-red-200' },
+  rejected: { label: 'Rejected', cls: 'bg-red-100 text-red-700 border border-red-200' },
 }
 
 export default function StatusBadge({ status }: Props) {

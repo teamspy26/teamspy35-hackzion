@@ -2,15 +2,16 @@
 import { Shipment } from '@/lib/firestore'
 import StatusBadge from './StatusBadge'
 import RiskBadge from './RiskBadge'
-import { ArrowUpRight, CheckCircle2 } from 'lucide-react'
+import { ArrowUpRight, CheckCircle2, XCircle } from 'lucide-react'
 
 interface Props {
   shipments: Shipment[]
   compact?: boolean
   onApproveQuote?: (id: string, price: number) => void
+  onRejectQuote?: (id: string) => void
 }
 
-export default function ShipmentTable({ shipments, compact, onApproveQuote }: Props) {
+export default function ShipmentTable({ shipments, compact, onApproveQuote, onRejectQuote }: Props) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
@@ -64,6 +65,14 @@ export default function ShipmentTable({ shipments, compact, onApproveQuote }: Pr
                     className="ml-3 inline-flex items-center justify-center gap-1 bg-green-500 text-white rounded text-xs font-bold px-2 py-1 hover:bg-green-600 transition"
                   >
                     <CheckCircle2 size={12} /> Approve
+                  </button>
+                )}
+                {s.status === 'quote_pending' && onRejectQuote && (
+                  <button 
+                    onClick={() => onRejectQuote(s.id!)}
+                    className="ml-2 inline-flex items-center justify-center gap-1 bg-red-500 text-white rounded text-xs font-bold px-2 py-1 hover:bg-red-600 transition"
+                  >
+                    <XCircle size={12} /> Reject
                   </button>
                 )}
               </td>

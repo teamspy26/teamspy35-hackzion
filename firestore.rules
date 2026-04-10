@@ -16,6 +16,7 @@ service cloud.firestore {
     function isAdmin()    { return isSignedIn() && userRole() == 'admin'; }
     function isOperator() { return isSignedIn() && userRole() == 'operator'; }
     function isDriver()   { return isSignedIn() && userRole() == 'driver'; }
+    function isClient()   { return isSignedIn() && userRole() == 'client'; }
 
     // ── users ──────────────────────────────────────────────────────────────────
     match /users/{uid} {
@@ -31,10 +32,10 @@ service cloud.firestore {
     match /shipments/{shipmentId} {
       // All authenticated users can read shipments
       allow read: if isSignedIn();
-      // Admin + operator can create
-      allow create: if isAdmin() || isOperator();
-      // Admin + operator + driver can update (driver marks delivered)
-      allow update: if isAdmin() || isOperator() || isDriver();
+      // Admin + operator + client can create
+      allow create: if isAdmin() || isOperator() || isClient();
+      // Admin + operator + driver + client can update
+      allow update: if isAdmin() || isOperator() || isDriver() || isClient();
       allow delete: if false;
     }
 

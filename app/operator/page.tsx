@@ -103,8 +103,41 @@ function OperatorContent() {
     if (!id) return;
     try {
       await updateShipmentStatus(id, 'pending' as any);
+      await fetch('/api/send-alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientGroup: 'custom',
+          customEmail: 'reachpavankumar0@gmail.com', // In production, this would be the client's email
+          alertType: 'info',
+          subject: 'Price Negotiation Approved!',
+          message: `Good news! Your price negotiation for shipment ID ${id.slice(0,6)} has been approved at ${price} INR. The shipment is now pending schedule.`,
+          senderName: 'Fleet Manager'
+        })
+      });
     } catch(e) {
       console.error('Failed to approve quote', e);
+    }
+  }
+
+  async function handleRejectQuote(id: string) {
+    if (!id) return;
+    try {
+      await updateShipmentStatus(id, 'rejected' as any);
+      await fetch('/api/send-alert', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientGroup: 'custom',
+          customEmail: 'reachpavankumar0@gmail.com', // In production, this would be the client's email
+          alertType: 'warning',
+          subject: 'Price Negotiation Update',
+          message: `Unfortunately, we could not approve the negotiated rate for shipment ID ${id.slice(0,6)}. Please contact the sales team to recalculate a mutual rate.`,
+          senderName: 'Fleet Manager'
+        })
+      });
+    } catch(e) {
+      console.error('Failed to reject quote', e);
     }
   }
 
@@ -626,7 +659,7 @@ function OperatorContent() {
                   {autoPlanned} of {shipments.length} AI-planned · 0 manual interventions
                 </div>
               </div>
-              <ShipmentTable shipments={shipments} onApproveQuote={handleApproveQuote} />
+              <ShipmentTable shipments={shipments} onApproveQuote={handleApproveQuote} onRejectQuote={handleRejectQuote} />
             </div>
 
           </div>

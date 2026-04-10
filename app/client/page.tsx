@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import AuthGuard from '@/components/AuthGuard'
+import Sidebar from '@/components/Sidebar'
+import ClientTracker from '@/components/ClientTracker'
 import { createShipment } from '@/lib/firestore'
 import NegotiationBox from '@/components/NegotiationBox'
 import {
@@ -86,6 +88,7 @@ function ClientContent() {
   
   // Shared States
   const [activeSection, setActiveSection] = useState('pet')
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [source, setSource]       = useState('')
   const [destination, setDest]    = useState('')
   const [distance, setDistance]   = useState('')
@@ -255,31 +258,15 @@ function ClientContent() {
 
   return (
     <div className="min-h-screen flex">
-      <div className={`flex-1 min-w-0 transition-all duration-300`}>
+      <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} onCollapse={setSidebarCollapsed} />
+      <div className={`flex-1 min-w-0 transition-all duration-300 ${sidebarCollapsed ? 'ml-16' : 'ml-60'}`}>
         <div className="max-w-[1400px] mx-auto px-6 py-7">
 
-          {/* Mode Switcher */}
-          <div className="flex bg-zinc-100 p-1 rounded-xl w-fit mb-6">
-            <button 
-              onClick={() => setActiveSection('pet')}
-              className={`px-6 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2 ${activeSection === 'pet' ? 'bg-white shadow text-[#111111]' : 'text-zinc-500 hover:text-[#111111]'}`}
-            >
-              <PawPrint size={16} /> Pet Transport
-            </button>
-            <button 
-              onClick={() => setActiveSection('freight')}
-              className={`px-6 py-2 rounded-lg font-bold text-sm transition-all flex items-center gap-2 ${activeSection === 'freight' ? 'bg-white shadow text-[#111111]' : 'text-zinc-500 hover:text-[#111111]'}`}
-            >
-              <Package size={16} /> General Freight
-            </button>
-            <div className="ml-4 flex items-center gap-3">
-               <button onClick={logout} className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 hover:bg-red-100 rounded-xl font-bold transition-all border border-red-200">
-                  <LogOut size={14} />
-               </button>
+          {activeSection === 'track' ? (
+            <div className="h-[calc(100vh-100px)]">
+              <ClientTracker />
             </div>
-          </div>
-
-          {activeSection === 'pet' ? (
+          ) : activeSection === 'pet' ? (
             <>
               {/* Pet Header */}
               <div className="flex items-start justify-between mb-7">

@@ -42,6 +42,7 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
   client: [
     { label: 'Overview', icon: <LayoutDashboard size={18} />, section: 'overview' },
     { label: 'Pet Transport', icon: <PawPrint size={18} />, section: 'pet' },
+    { label: 'General Freight', icon: <Package size={18} />, section: 'freight' },
     { label: 'My Orders', icon: <Package size={18} />, section: 'orders' },
     { label: 'Track Order', icon: <Route size={18} />, section: 'track' },
   ],

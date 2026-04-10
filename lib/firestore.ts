@@ -22,7 +22,7 @@ export interface Shipment {
   delay_risk: 'low' | 'medium' | 'high'
   vehicle: string
   route: string
-  status: 'quote_pending' | 'pending' | 'in_transit' | 'delivered' | 'delayed'
+  status: 'quote_pending' | 'pending' | 'in_transit' | 'delivered' | 'delayed' | 'rejected'
   assigned_driver: string
   ai_analysis?: string
   createdAt?: Timestamp

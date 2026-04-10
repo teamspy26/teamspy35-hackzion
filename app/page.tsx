@@ -165,12 +165,6 @@ export default function LandingPage() {
 
           {/* Social proof row */}
           <div className="flex items-center gap-6 flex-wrap">
-            <div className="flex items-center gap-1.5">
-              <div className="flex">
-                {[0,1,2,3,4].map(i => <Star key={i} size={14} fill="#EAB308" className="text-yellow-500" />)}
-              </div>
-              <span className="text-xs text-zinc-500">Hackathon Ready</span>
-            </div>
             <div className="flex items-center gap-1.5 text-xs text-zinc-500">
               <Shield size={13} className="text-green-400" />
               Role-based access
