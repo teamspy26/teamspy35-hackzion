@@ -1,6 +1,5 @@
-const apiKey = process.env.WEATHER_API_KEY;
-
 export async function getWeather(city: string) {
+  const apiKey = process.env.WEATHER_API_KEY;
   if (!apiKey) {
     throw new Error('Weather API key is not configured');
   }

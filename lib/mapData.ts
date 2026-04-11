@@ -140,3 +140,20 @@ export const ANIMAL_CATEGORIES: Record<string, any[]> = {
     { value: 'tiger', label: 'Tiger', emoji: '🐅', desc: 'Panthera tigris' },
   ]
 };
+
+// Mapping of specific rest/food/fuel stops for major routes
+export const REST_STOPS: Record<string, {name: string, type: string}[]> = {
+  'Bangalore-Chennai': [
+    { name: 'A2B Krishnagiri', type: 'food' },
+    { name: 'Vellore BP Bunk', type: 'fuel' },
+    { name: 'Sriperumbudur Plaza', type: 'rest' }
+  ],
+  'Mumbai-Pune': [
+    { name: 'Lonavala Food Court', type: 'food' },
+    { name: 'Khalapur Toll Plaza', type: 'rest' }
+  ],
+  'Delhi-Agra': [
+    { name: 'Kosi Kalan Rest Area', type: 'food' },
+    { name: 'Mathura Toll Plaza', type: 'rest' }
+  ]
+};
