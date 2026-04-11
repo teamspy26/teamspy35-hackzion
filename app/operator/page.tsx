@@ -78,7 +78,7 @@ function OperatorContent() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [scheduledTime, setScheduledTime] = useState('')
   const [petMode, setPetMode] = useState(false)
-  const [petType, setPetType] = useState<'dog' | 'cat'>('dog')
+  const [petType, setPetType] = useState<string>('dog')
   const [petAge, setPetAge] = useState('')
   const [petPlan, setPetPlan] = useState<PetPlan | null>(null)
   const [mapShipment, setMapShipment] = useState<Shipment | null>(null)
@@ -407,12 +407,12 @@ function OperatorContent() {
                   <div className="text-xs font-semibold text-orange-600 uppercase tracking-wide flex items-center gap-1">
                     <PawPrint size={10} /> Pet Details
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {(['dog', 'cat'] as const).map(pt => (
-                      <button key={pt} type="button"
-                        onClick={() => setPetType(pt)}
-                        className={`rounded-lg py-2 text-sm font-semibold border-2 transition-all ${petType === pt ? 'border-orange-400 bg-orange-100 text-orange-700' : 'border-zinc-200 bg-white text-zinc-500'}`}>
-                        {pt === 'dog' ? '🐕 Dog' : '🐈 Cat'}
+                    <div className="grid grid-cols-4 gap-2">
+                      {(['dog', 'cat', 'bird', 'rabbit'] as const).map(pt => (
+                        <button key={pt} type="button"
+                          onClick={() => setPetType(pt)}
+                          className={`rounded-lg py-2 text-sm font-semibold border-2 transition-all ${petType === pt ? 'border-orange-400 bg-orange-100 text-orange-700' : 'border-zinc-200 bg-white text-zinc-500'}`}>
+                          {pt === 'dog' ? '🐕' : pt === 'cat' ? '🐈' : pt === 'bird' ? '🦜' : '🐇'} <span className="capitalize">{pt}</span>
                       </button>
                     ))}
                   </div>

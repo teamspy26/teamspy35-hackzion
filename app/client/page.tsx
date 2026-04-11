@@ -1,11 +1,12 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import AuthGuard from '@/components/AuthGuard'
 import Sidebar from '@/components/Sidebar'
 import ClientTracker from '@/components/ClientTracker'
 import { createShipment } from '@/lib/firestore'
 import NegotiationBox from '@/components/NegotiationBox'
+import { CITY_COORDS } from '@/lib/mapData'
 import {
   PawPrint, Thermometer, AlertTriangle, CheckCircle, Sparkles,
   Send, Loader2, MapPin, Route, Shield, Navigation, Droplets, Wind,
@@ -42,9 +43,11 @@ interface AIPlan {
 const PET_TYPES = [
   { value: 'dog', emoji: '🐕', label: 'Dog', desc: 'Canis familiaris' },
   { value: 'cat', emoji: '🐈', label: 'Cat', desc: 'Felis catus' },
-]
-
-const RISK_CONFIG = {
+    { value: 'bird', emoji: '🦜', label: 'Bird', desc: 'Aves' },
+    { value: 'rabbit', emoji: '🐇', label: 'Rabbit', desc: 'Oryctolagus cuniculus' }
+  ]
+  
+  const RISK_CONFIG: Record<string, any> = {
   LOW:    { color: 'text-green-600',  bg: 'bg-green-50  border-green-200',  bar: 'bg-green-500',  label: 'Low Risk'    },
   MEDIUM: { color: 'text-yellow-600', bg: 'bg-yellow-50 border-yellow-200', bar: 'bg-yellow-500', label: 'Medium Risk' },
   HIGH:   { color: 'text-red-600',    bg: 'bg-red-50    border-red-200',    bar: 'bg-red-500',    label: 'High Risk'   },
@@ -99,10 +102,29 @@ function ClientContent() {
   const [saving, setSaving]       = useState(false)
 
   // Pet Specific States
-  const [petType, setPetType]     = useState<'dog' | 'cat'>('dog')
+  const [petType, setPetType]     = useState<string>('dog')
   const [age, setAge]             = useState('')
   const [temperature, setTemp]    = useState('35')
   const [petPlan, setPetPlan]     = useState<PetPlan | null>(null)
+
+  useEffect(() => {
+    async function fetchTemp() {
+      if (!source || !CITY_COORDS[source]) return
+      try {
+        const { lat, lng } = CITY_COORDS[source]
+        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`)
+        if (res.ok) {
+          const data = await res.json()
+          if (data?.current_weather?.temperature) {
+            setTemp(data.current_weather.temperature.toString())
+          }
+        }
+      } catch (e) {
+        console.error('Weather fetch error', e)
+      }
+    }
+    fetchTemp()
+  }, [source])
 
   // Freight Specific States
   const [cargoType, setCargoType] = useState('Standard')
@@ -291,7 +313,7 @@ function ClientContent() {
                     <div className="grid grid-cols-2 gap-3 mb-4">
                       {PET_TYPES.map(p => (
                         <button key={p.value} type="button"
-                          onClick={() => setPetType(p.value as 'dog' | 'cat')}
+                          onClick={() => setPetType(p.value)}
                           className={`rounded-xl p-4 border-2 text-center transition-all ${petType === p.value ? 'border-brand-yellow bg-brand-yellow/10' : 'border-zinc-200 hover:border-zinc-300'}`}>
                           <div className="text-3xl mb-1">{p.emoji}</div>
                           <div className="font-bold text-sm text-[#111111]">{p.label}</div>
