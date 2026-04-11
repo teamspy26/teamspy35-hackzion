@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar'
 import ClientTracker from '@/components/ClientTracker'
 import { createShipment } from '@/lib/firestore'
 import NegotiationBox from '@/components/NegotiationBox'
-import { CITY_COORDS } from '@/lib/mapData'
+import { CITY_COORDS, ANIMAL_CATEGORIES } from '@/lib/mapData'
 import {
   PawPrint, Thermometer, AlertTriangle, CheckCircle, Sparkles,
   Send, Loader2, MapPin, Route, Shield, Navigation, Droplets, Wind,
@@ -40,14 +40,7 @@ interface AIPlan {
   analysis: string
 }
 
-const PET_TYPES = [
-  { value: 'dog', emoji: '🐕', label: 'Dog', desc: 'Canis familiaris' },
-  { value: 'cat', emoji: '🐈', label: 'Cat', desc: 'Felis catus' },
-    { value: 'bird', emoji: '🦜', label: 'Bird', desc: 'Aves' },
-    { value: 'rabbit', emoji: '🐇', label: 'Rabbit', desc: 'Oryctolagus cuniculus' }
-  ]
-  
-  const RISK_CONFIG: Record<string, any> = {
+const RISK_CONFIG: Record<string, any> = {
   LOW:    { color: 'text-green-600',  bg: 'bg-green-50  border-green-200',  bar: 'bg-green-500',  label: 'Low Risk'    },
   MEDIUM: { color: 'text-yellow-600', bg: 'bg-yellow-50 border-yellow-200', bar: 'bg-yellow-500', label: 'Medium Risk' },
   HIGH:   { color: 'text-red-600',    bg: 'bg-red-50    border-red-200',    bar: 'bg-red-500',    label: 'High Risk'   },
@@ -102,6 +95,7 @@ function ClientContent() {
   const [saving, setSaving]       = useState(false)
 
   // Pet Specific States
+  const [petCategory, setPetCategory] = useState(Object.keys(ANIMAL_CATEGORIES)[0])
   const [petType, setPetType]     = useState<string>('dog')
   const [age, setAge]             = useState('')
   const [temperature, setTemp]    = useState('35')
@@ -310,16 +304,23 @@ function ClientContent() {
                       <h2 className="font-bold text-[#111111]">Pet Details</h2>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 mb-4">
-                      {PET_TYPES.map(p => (
-                        <button key={p.value} type="button"
-                          onClick={() => setPetType(p.value)}
-                          className={`rounded-xl p-4 border-2 text-center transition-all ${petType === p.value ? 'border-brand-yellow bg-brand-yellow/10' : 'border-zinc-200 hover:border-zinc-300'}`}>
-                          <div className="text-3xl mb-1">{p.emoji}</div>
-                          <div className="font-bold text-sm text-[#111111]">{p.label}</div>
-                          <div className="text-[10px] text-zinc-400 italic">{p.desc}</div>
-                        </button>
-                      ))}
+                    <div className="mb-4 space-y-3">
+                      <div>
+                         <label className="text-xs font-semibold text-zinc-500 mb-1 block uppercase tracking-wide">Category</label>
+                         <select value={petCategory} onChange={e => { setPetCategory(e.target.value); setPetType(ANIMAL_CATEGORIES[e.target.value][0].value) }} className="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow">
+                           {Object.keys(ANIMAL_CATEGORIES).map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                         </select>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                         {ANIMAL_CATEGORIES[petCategory].map(p => (
+                            <button key={p.value} type="button"
+                              onClick={() => setPetType(p.value)}
+                              className={`rounded-lg p-2 border-2 text-center transition-all ${petType === p.value ? 'border-brand-yellow bg-brand-yellow/10' : 'border-zinc-200 hover:border-zinc-300'}`}>
+                              <div className="text-2xl mb-1">{p.emoji}</div>
+                              <div className="font-bold text-[11px] text-[#111111] leading-tight">{p.label}</div>
+                            </button>
+                         ))}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">

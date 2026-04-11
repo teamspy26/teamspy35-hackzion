@@ -17,6 +17,7 @@ import {
 import OperatorMap from '@/components/maps/OperatorMap'
 import VisualIntelligence from '@/components/VisualIntelligence'
 import { getTraffic, getWeather, TRAFFIC_META, WEATHER_META, getScheduledDelivery } from '@/lib/realtime'
+import { ANIMAL_CATEGORIES } from '@/lib/mapData'
 
 interface PetPlan {
   comfort_score: number
@@ -78,6 +79,7 @@ function OperatorContent() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [scheduledTime, setScheduledTime] = useState('')
   const [petMode, setPetMode] = useState(false)
+  const [petCategory, setPetCategory] = useState(Object.keys(ANIMAL_CATEGORIES)[0])
   const [petType, setPetType] = useState<string>('dog')
   const [petAge, setPetAge] = useState('')
   const [petPlan, setPetPlan] = useState<PetPlan | null>(null)
@@ -407,14 +409,19 @@ function OperatorContent() {
                   <div className="text-xs font-semibold text-orange-600 uppercase tracking-wide flex items-center gap-1">
                     <PawPrint size={10} /> Pet Details
                   </div>
-                    <div className="grid grid-cols-4 gap-2">
-                      {(['dog', 'cat', 'bird', 'rabbit'] as const).map(pt => (
-                        <button key={pt} type="button"
-                          onClick={() => setPetType(pt)}
-                          className={`rounded-lg py-2 text-sm font-semibold border-2 transition-all ${petType === pt ? 'border-orange-400 bg-orange-100 text-orange-700' : 'border-zinc-200 bg-white text-zinc-500'}`}>
-                          {pt === 'dog' ? '🐕' : pt === 'cat' ? '🐈' : pt === 'bird' ? '🦜' : '🐇'} <span className="capitalize">{pt}</span>
-                      </button>
-                    ))}
+                  <div className="space-y-2">
+                    <select value={petCategory} onChange={e => { setPetCategory(e.target.value); setPetType(ANIMAL_CATEGORIES[e.target.value][0].value) }} className="w-full px-3 py-2 bg-white border border-zinc-200 rounded-lg text-xs font-medium focus:outline-none focus:border-orange-400">
+                      {Object.keys(ANIMAL_CATEGORIES).map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <div className="grid grid-cols-3 gap-2">
+                      {ANIMAL_CATEGORIES[petCategory].map(p => (
+                         <button key={p.value} type="button"
+                           onClick={() => setPetType(p.value)}
+                           className={`rounded-lg py-1.5 text-xs font-semibold border-2 transition-all ${petType === p.value ? 'border-orange-400 bg-orange-100 text-orange-700' : 'border-zinc-200 bg-white text-zinc-500'}`}>
+                           {p.emoji} {p.label}
+                         </button>
+                      ))}
+                    </div>
                   </div>
                   <div>
                     <label className="text-xs font-semibold text-zinc-500 mb-1 block uppercase tracking-wide">Pet Age (years)</label>
