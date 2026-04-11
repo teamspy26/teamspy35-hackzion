@@ -29,7 +29,7 @@ export interface Shipment {
   negotiated_price?: number
   cargo_type?: string
   // Pet transport fields
-  pet_type?: 'dog' | 'cat'
+  pet_type?: string
   pet_weight?: number
   pet_age?: number
   pet_comfort_score?: number
