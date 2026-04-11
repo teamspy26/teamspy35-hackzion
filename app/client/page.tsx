@@ -98,27 +98,70 @@ function ClientContent() {
   const [petCategory, setPetCategory] = useState(Object.keys(ANIMAL_CATEGORIES)[0])
   const [petType, setPetType]     = useState<string>('dog')
   const [age, setAge]             = useState('')
-  const [temperature, setTemp]    = useState('35')
+  const [originTemp, setOriginTemp] = useState<number | null>(null)
+  const [destTemp, setDestTemp] = useState<number | null>(null)
+  const [tempLoading, setTempLoading] = useState<string | null>(null)
+  const [originError, setOriginError] = useState<string | null>(null)
+  const [destError, setDestError] = useState<string | null>(null)
   const [petPlan, setPetPlan]     = useState<PetPlan | null>(null)
 
   useEffect(() => {
-    async function fetchTemp() {
-      if (!source || !CITY_COORDS[source]) return
+    if (!source) {
+      setOriginTemp(null)
+      setOriginError(null)
+      return
+    }
+    const timer = setTimeout(async () => {
+      setTempLoading('origin')
+      setOriginError(null)
       try {
-        const { lat, lng } = CITY_COORDS[source]
-        const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&current_weather=true`)
-        if (res.ok) {
-          const data = await res.json()
-          if (data?.current_weather?.temperature) {
-            setTemp(data.current_weather.temperature.toString())
-          }
+        const res = await fetch(`/api/weather?city=${source}`)
+        const data = await res.json()
+        if (res.ok && data.success) {
+          setOriginTemp(data.temperature)
+        } else {
+          setOriginTemp(null)
+          setOriginError(data.error || 'Failed to fetch weather')
         }
       } catch (e) {
         console.error('Weather fetch error', e)
+        setOriginTemp(null)
+        setOriginError('Network error')
+      } finally {
+        setTempLoading(null)
       }
-    }
-    fetchTemp()
+    }, 500) // Debounce API call
+    return () => clearTimeout(timer)
   }, [source])
+
+  useEffect(() => {
+    if (!destination) {
+      setDestTemp(null)
+      setDestError(null)
+      return
+    }
+    const timer = setTimeout(async () => {
+      setTempLoading('dest')
+      setDestError(null)
+      try {
+        const res = await fetch(`/api/weather?city=${destination}`)
+        const data = await res.json()
+        if (res.ok && data.success) {
+          setDestTemp(data.temperature)
+        } else {
+          setDestTemp(null)
+          setDestError(data.error || 'Failed to fetch weather')
+        }
+      } catch (e) {
+        console.error('Weather fetch error', e)
+        setDestTemp(null)
+        setDestError('Network error')
+      } finally {
+        setTempLoading(null)
+      }
+    }, 500) // Debounce API call
+    return () => clearTimeout(timer)
+  }, [destination])
 
   // Freight Specific States
   const [cargoType, setCargoType] = useState('Standard')
@@ -128,6 +171,10 @@ function ClientContent() {
   async function handlePetCheck() {
     if (!source || !destination || !distance || !weight || !age) {
       alert('Please fill all fields')
+      return
+    }
+    if (originTemp === null || destTemp === null) {
+      alert('Could not fetch weather data for the selected cities. Please check the city names.')
       return
     }
     setLoading(true)
@@ -143,7 +190,7 @@ function ClientContent() {
           age: Number(age),
           source, destination,
           distance: Number(distance),
-          temperature: Number(temperature),
+          temperature: Math.max(originTemp, destTemp),
         }),
       })
       const json = await res.json()
@@ -359,12 +406,19 @@ function ClientContent() {
                           <input type="number" placeholder="350" value={distance} onChange={e => setDistance(e.target.value)}
                             className="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
                         </div>
-                        <div>
+                        <div className="relative">
                           <label className="text-xs font-semibold text-zinc-500 mb-1 flex items-center gap-1 uppercase tracking-wide">
                             <Thermometer size={10} /> Temp (°C)
                           </label>
-                          <input type="number" placeholder="35" value={temperature} onChange={e => setTemp(e.target.value)}
-                            className="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-yellow" />
+                          <div className="w-full px-3 py-2.5 bg-zinc-50 border border-zinc-200 rounded-xl text-sm">
+                            <span className={originTemp !== null ? 'text-[#111111]' : 'text-zinc-400'}>
+                              {tempLoading === 'origin' ? <Loader2 size={12} className="inline animate-spin" /> : originTemp ?? 'Origin'}
+                            </span>
+                            <span className="text-zinc-300 mx-1">|</span>
+                            <span className={destTemp !== null ? 'text-[#111111]' : 'text-zinc-400'}>
+                              {tempLoading === 'dest' ? <Loader2 size={12} className="inline animate-spin" /> : destTemp ?? 'Dest'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
