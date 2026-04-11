@@ -32,13 +32,6 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
     { label: 'AI Planner', icon: <Sparkles size={18} />, section: 'ai' },
     { label: 'All Shipments', icon: <Package size={18} />, section: 'shipments' },
   ],
-  driver: [
-    { label: 'Overview', icon: <LayoutDashboard size={18} />, section: 'overview' },
-    { label: 'Active Route', icon: <Navigation size={18} />, section: 'active' },
-    { label: 'Pending', icon: <Truck size={18} />, section: 'pending' },
-    { label: 'AI Suggestions', icon: <Sparkles size={18} />, section: 'ai' },
-    { label: 'Completed', icon: <CheckCircle size={18} />, section: 'completed' },
-  ],
   client: [
     { label: 'Overview', icon: <LayoutDashboard size={18} />, section: 'overview' },
     { label: 'Pet Transport', icon: <PawPrint size={18} />, section: 'pet' },
@@ -51,14 +44,12 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
 const ROLE_LABELS: Record<Role, string> = {
   admin: 'Admin',
   operator: 'Operator',
-  driver: 'Driver',
   client: 'Client',
 }
 
 const ROLE_COLORS: Record<Role, string> = {
   admin: 'bg-purple-500',
   operator: 'bg-blue-500',
-  driver: 'bg-green-500',
   client: 'bg-orange-500',
 }
 

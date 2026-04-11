@@ -43,21 +43,12 @@ const ROLES = [
     highlight: false,
   },
   {
-    value: 'driver',
-    label: 'Driver',
-    subtitle: 'Execution Panel',
-    icon: <Truck size={28} />,
-    desc: 'View assignments, start deliveries, get AI safety suggestions.',
-    features: ['Assigned deliveries', 'Start / complete', 'AI suggestions', 'Status broadcast'],
-    highlight: false,
-  },
-  {
     value: 'client',
     label: 'Client',
-    subtitle: 'Pet Transport',
-    icon: <PawPrint size={28} />,
-    desc: 'Book safe pet transport with AI comfort scoring, heat risk detection, and rest stop planning.',
-    features: ['Pet comfort score', 'Heat risk alerts', 'Smart rest stops', 'Safe mode selection'],
+    subtitle: 'Customer Portal',
+    icon: <Users size={28} />,
+    desc: 'Book new shipments, track existing orders in real-time, and view your order history.',
+    features: ['Book shipments', 'Track orders', 'View order history', 'Get delivery alerts'],
     highlight: false,
   },
 ]
@@ -219,7 +210,7 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
               {
                 icon: <Brain size={22} className="text-yellow-400" />,
@@ -236,7 +227,7 @@ export default function LandingPage() {
               {
                 icon: <Shield size={22} className="text-yellow-400" />,
                 title: 'Role-Based Access',
-                desc: 'Admin monitors the fleet, Operator creates and plans, Driver executes. Each role sees exactly what they need.',
+                desc: 'Admin monitors the fleet, Operator creates and plans. Each role sees exactly what they need.',
                 tag: 'Security',
               },
               {
@@ -252,10 +243,10 @@ export default function LandingPage() {
                 tag: 'Routing',
               },
               {
-                icon: <Truck size={22} className="text-yellow-400" />,
-                title: 'Driver Execution',
-                desc: 'Driver panel with start/complete buttons, AI safety alerts, and real-time suggestions for rerouting.',
-                tag: 'Execution',
+                icon: <PawPrint size={22} className="text-yellow-400" />,
+                title: 'Pet Transportation',
+                desc: 'Specialized transport for pets with AI-powered comfort scoring, heat risk detection, and smart rest stop planning.',
+                tag: 'Specialized',
               },
             ].map(f => (
               <div key={f.title}
@@ -320,7 +311,7 @@ export default function LandingPage() {
             {[
               { role: 'admin', label: 'Admin', icon: <BarChart3 size={28} />, desc: 'Monitor fleet health, view AI insights, track delays, manage drivers.', color: 'yellow', features: ['Real-time fleet map', 'AI risk scoring', 'Delay alerts', 'Driver management'] },
               { role: 'operator', label: 'Operator', icon: <Package size={28} />, desc: 'Create shipments, trigger AI route planning, save to Firebase with one click.', color: 'white', features: ['Shipment creation form', 'One-click AI planning', 'Firebase auto-save', 'Live shipment tracker'] },
-              { role: 'driver', label: 'Driver', icon: <Truck size={28} />, desc: 'View assignments, start and complete deliveries, get AI safety suggestions.', color: 'white', features: ['Assigned deliveries', 'Start / complete buttons', 'AI route suggestions', 'Live status broadcast'] },
+              { role: 'client', label: 'Client', icon: <Users size={28} />, desc: 'Book new shipments, track existing orders in real-time, and view your order history.', color: 'white', features: ['Book shipments', 'Track orders', 'View order history', 'Get delivery alerts'] },
             ].map(r => (
               <button key={r.role} onClick={() => router.push(`/login?role=${r.role}`)}
                 className={`group rounded-2xl p-7 border text-left transition-all hover:-translate-y-1 hover:shadow-2xl ${r.color === 'yellow' ? 'bg-yellow-500 border-yellow-400' : 'bg-white/3 border-white/8 hover:border-yellow-500/30'}`}>
@@ -423,7 +414,7 @@ export default function LandingPage() {
             </div>
 
             {/* Role cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {ROLES.map(r => (
                 <button
                   key={r.value}

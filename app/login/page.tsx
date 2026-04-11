@@ -9,7 +9,6 @@ import clsx from 'clsx'
 const ROLES: { value: Role; label: string }[] = [
   { value: 'admin', label: 'Admin' },
   { value: 'operator', label: 'Operator' },
-  { value: 'driver', label: 'Driver' },
   { value: 'client', label: 'Client' },
 ]
 
@@ -24,7 +23,7 @@ function LoginForm() {
   const [name, setName] = useState('')
   const [selectedRole, setSelectedRole] = useState<Role>(() => {
     const r = searchParams.get('role')
-    return (r === 'admin' || r === 'operator' || r === 'driver' || r === 'client') ? r : 'admin'
+    return (r === 'admin' || r === 'operator' || r === 'client') ? r : 'admin'
   })
   const [showPassword, setShowPassword] = useState(false)
   const [submitting, setSubmitting] = useState(false)

@@ -86,28 +86,6 @@ export const RISK_ZONE_COLORS: Record<RiskZoneType, { fill: string; stroke: stri
   strike:  { fill: '#eab308', stroke: '#ca8a04' },
 }
 
-// Rest stops along key routes for Driver view
-export const REST_STOPS: Record<string, Array<{ lat: number; lng: number; name: string; type: 'fuel' | 'food' | 'rest' }>> = {
-  'Bangalore-Chennai': [
-    { lat: 12.734, lng: 78.089, name: 'Krishnagiri Dhaba', type: 'food' },
-    { lat: 12.912, lng: 79.643, name: 'Vellore Fuel Stop', type: 'fuel' },
-  ],
-  'Delhi-Agra': [
-    { lat: 28.36, lng: 77.5, name: 'Faridabad Rest Area', type: 'rest' },
-    { lat: 27.897, lng: 77.65, name: 'Mathura Fuel Station', type: 'fuel' },
-  ],
-  'Mumbai-Pune': [
-    { lat: 18.86, lng: 73.304, name: 'Khopoli Highway Cafe', type: 'food' },
-  ],
-  'Kolkata-Bhubaneswar': [
-    { lat: 22.34, lng: 87.32, name: 'Kharagpur Fuel Stop', type: 'fuel' },
-    { lat: 21.494, lng: 86.93, name: 'Balasore Rest Area', type: 'rest' },
-  ],
-  'Hyderabad-Vijayawada': [
-    { lat: 16.93, lng: 79.5, name: 'Suryapet Highway Stop', type: 'fuel' },
-  ],
-}
-
 // Simulated progress along route (0 = at source, 1 = at destination)
 export const SHIPMENT_PROGRESS: Record<string, number> = {
   S1: 0.45,
